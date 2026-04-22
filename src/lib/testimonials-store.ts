@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Testimonial } from "./types";
+import { logAudit } from "./audit-store";
 import { mockTestimonials } from "./mock-data";
 import { getSupabase } from "./supabase";
 
@@ -91,6 +92,7 @@ export function useTestimonials() {
           if (error) console.warn("[testimonials] insert error:", error.message);
         });
     }
+    logAudit({ action: "TESTIMONIAL_CREATE", target: `testimoni:${t.name}` });
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -105,6 +107,7 @@ export function useTestimonials() {
           if (error) console.warn("[testimonials] delete error:", error.message);
         });
     }
+    logAudit({ action: "TESTIMONIAL_DELETE", target: `testimoni:${id}` });
   }, []);
 
   const reset = useCallback(() => {

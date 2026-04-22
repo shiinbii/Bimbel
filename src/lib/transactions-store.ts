@@ -5,6 +5,37 @@ import { mockTransactions } from "./mock-data";
 import { getSupabase } from "./supabase";
 import type { Transaction, TxStatus } from "./types";
 
+export async function insertTransaction(tx: {
+  userName: string;
+  userEmail?: string | null;
+  userId?: string | null;
+  packageName: string;
+  amount: number;
+  points: number;
+  method: string;
+  status: TxStatus;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const supa = getSupabase();
+  if (!supa) return { ok: false, error: "Supabase tidak terkonfigurasi" };
+  const id = `TX${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  const { error } = await supa.from("transactions").insert({
+    id,
+    user_id: tx.userId ?? null,
+    user_name: tx.userName,
+    user_email: tx.userEmail ?? null,
+    package_name: tx.packageName,
+    amount: tx.amount,
+    points: tx.points,
+    method: tx.method,
+    status: tx.status,
+  });
+  if (error) {
+    console.warn("[transactions] insert error:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, id };
+}
+
 type DbRow = {
   id: string;
   user_name: string;

@@ -33,6 +33,8 @@ import { useCurrentUser } from "@/lib/current-user";
 import { formatIDR } from "@/lib/format";
 import { daysUntil, useWallet } from "@/lib/points-store";
 import { mockPackages, mockTransactions, mockUser, mockZoomSessions } from "@/lib/mock-data";
+import { getSupabase } from "@/lib/supabase";
+import { insertTransaction } from "@/lib/transactions-store";
 import type { PointPackage } from "@/lib/types";
 
 const PAYMENT_METHODS = [
@@ -64,6 +66,27 @@ export default function StudentDashboardPage() {
     await new Promise((r) => setTimeout(r, 1200));
     const totalPts = pkg.points + (pkg.bonus ?? 0);
     grant(totalPts, undefined, "PURCHASE", `Beli paket ${pkg.name}`);
+
+    // Catat transaksi ke DB (fire-and-forget — tidak block UX kalau gagal).
+    const supa = getSupabase();
+    let uid: string | null = null;
+    if (supa) {
+      const { data } = await supa.auth.getSession();
+      uid = data.session?.user.id ?? null;
+    }
+    const methodLabel =
+      PAYMENT_METHODS.find((m) => m.value === method)?.label ?? method;
+    void insertTransaction({
+      userId: uid,
+      userName: displayName,
+      userEmail: user.email ?? null,
+      packageName: pkg.name,
+      amount: pkg.price,
+      points: totalPts,
+      method: methodLabel,
+      status: "SUCCESS",
+    });
+
     enqueueSnackbar(`Berhasil! ${totalPts} poin ditambahkan.`, { variant: "success" });
     setLoading(false);
     setPkg(null);

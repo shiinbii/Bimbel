@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { logAudit } from "./audit-store";
 import { mockUser } from "./mock-data";
 import { maybeReactivateOnCredit, updateUserByEmail } from "./users-store";
 import { getSupabase } from "./supabase";
@@ -363,6 +364,10 @@ export function useWallet() {
         console.warn("[points] grantTo rpc error", error.message);
         return { ok: false, error: error.message };
       }
+      logAudit({
+        action: "POINT_GRANT",
+        target: `user:${targetUserId} +${points}pts (${source})`,
+      });
       return { ok: true };
     },
     []

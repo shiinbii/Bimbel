@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 const KEY = "edudoc.credit_packages";
@@ -119,20 +120,32 @@ export function useCreditPackages() {
 
   const upsert = useCallback((p: CreditPackage) => {
     const supa = getSupabase();
+    const existing = readLS().some((x) => x.id === p.id);
+    const isNew = !existing;
     setList((prev) =>
       (prev.some((x) => x.id === p.id)
         ? prev.map((x) => (x.id === p.id ? p : x))
         : [...prev, p]
       ).sort((a, b) => a.order - b.order)
     );
-    if (supa) void supa.from("credit_packages").upsert(toDb(p));
-    else {
+    if (supa) {
+      void supa
+        .from("credit_packages")
+        .upsert(toDb(p))
+        .then(({ error }) => {
+          if (error) console.warn("[packages] upsert error:", error.message);
+        });
+    } else {
       const next = (readLS().some((x) => x.id === p.id)
         ? readLS().map((x) => (x.id === p.id ? p : x))
         : [...readLS(), p]
       ).sort((a, b) => a.order - b.order);
       writeLS(next);
     }
+    logAudit({
+      action: isNew ? "PACKAGE_CREATE" : "PACKAGE_UPDATE",
+      target: `pkg:${p.id} ${p.points}pts/${p.price}`,
+    });
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -140,13 +153,21 @@ export function useCreditPackages() {
     setList((prev) =>
       prev.filter((p) => p.id !== id).map((p, i) => ({ ...p, order: i + 1 }))
     );
-    if (supa) void supa.from("credit_packages").delete().eq("id", id);
-    else {
+    if (supa) {
+      void supa
+        .from("credit_packages")
+        .delete()
+        .eq("id", id)
+        .then(({ error }) => {
+          if (error) console.warn("[packages] delete error:", error.message);
+        });
+    } else {
       const next = readLS()
         .filter((p) => p.id !== id)
         .map((p, i) => ({ ...p, order: i + 1 }));
       writeLS(next);
     }
+    logAudit({ action: "PACKAGE_DELETE", target: `pkg:${id}` });
   }, []);
 
   const reset = useCallback(() => {

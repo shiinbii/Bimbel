@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 const KEY = "edudoc.coin_pricing";
@@ -85,6 +86,10 @@ export function useCoinPricing() {
       const next = { ...prev, ...patch };
       persist(next);
       return next;
+    });
+    logAudit({
+      action: "COIN_PRICING_UPDATE",
+      target: patch.pricePerCoin !== undefined ? `Rp${patch.pricePerCoin}/coin` : "pricing",
     });
   }, []);
 

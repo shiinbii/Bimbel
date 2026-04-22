@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Role } from "./types";
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 export type DeactivationReason =
@@ -135,6 +136,18 @@ export function updateUserByEmail(email: string, patch: Partial<ManagedUser>) {
       void supa.from("profiles").update(dbPatch).eq("id", user.id);
     }
   }
+
+  // Audit log — pilih action berdasarkan intent
+  if (patch.deactivated !== undefined) {
+    logAudit({
+      action: patch.deactivated ? "USER_DEACTIVATE" : "USER_REACTIVATE",
+      target: `user:${user.email}`,
+    });
+  } else if (patch.role !== undefined) {
+    logAudit({ action: "USER_ROLE_CHANGE", target: `user:${user.email} → ${patch.role}` });
+  } else if (Object.keys(patch).length > 0) {
+    logAudit({ action: "USER_UPDATE", target: `user:${user.email}` });
+  }
 }
 
 export function maybeReactivateOnCredit(email: string, balance: number) {
@@ -243,6 +256,7 @@ export function useUsersStore() {
 
   const remove = useCallback((id: string) => {
     const supa = getSupabase();
+    const victim = cache.find((u) => u.id === id);
     setCache(cache.filter((u) => u.id !== id));
     setList((prev) => prev.filter((u) => u.id !== id));
     // Deleting auth.users cascades to profiles — but anon key can't do that.
@@ -257,6 +271,7 @@ export function useUsersStore() {
         })
         .eq("id", id);
     }
+    if (victim) logAudit({ action: "USER_REMOVE", target: `user:${victim.email}` });
   }, []);
 
   return { list, updateById, upsert, setDeactivated, remove, loaded };

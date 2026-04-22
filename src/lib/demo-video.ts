@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 export const DEFAULT_DEMO_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
@@ -71,6 +72,7 @@ export function useDemoVideoUrl() {
         url: v,
         updated_at: new Date().toISOString(),
       });
+    logAudit({ action: "DEMO_VIDEO_UPDATE", target: v });
   };
 
   const reset = () => {

@@ -118,6 +118,7 @@ export const defaultLandingContent: LandingContent = {
   ctaSecondaryButton: "Tonton Demo Video",
 };
 
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 export function useLandingContent() {
@@ -173,6 +174,7 @@ export function useLandingContent() {
       persist(next);
       return next;
     });
+    logAudit({ action: "LANDING_CONTENT_UPDATE", target: `fields:${Object.keys(patch).join(",")}` });
   }, []);
 
   const replaceAll = useCallback((next: LandingContent) => {

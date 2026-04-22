@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { mockTests } from "./mock-data";
 import type { Test, Question } from "./types";
 import { getSupabase } from "./supabase";
@@ -158,6 +159,7 @@ export function useTestsStore() {
   const upsert = useCallback((t: ManagedTest) => {
     const supa = getSupabase();
     const n = normalize(t);
+    const isNew = !readLS().some((x) => x.id === n.id);
     setList((prev) =>
       prev.some((x) => x.id === n.id)
         ? prev.map((x) => (x.id === n.id ? n : x))
@@ -165,6 +167,10 @@ export function useTestsStore() {
     );
     if (supa) void supa.from("quiz_tests").upsert(toDb(n));
     else writeLS([n, ...readLS().filter((x) => x.id !== n.id)]);
+    logAudit({
+      action: isNew ? "TEST_CREATE" : "TEST_UPDATE",
+      target: `test:${n.id} "${n.title}"`,
+    });
   }, []);
 
   const toggleActive = useCallback((id: string) => {
@@ -176,6 +182,7 @@ export function useTestsStore() {
       if (!supa) writeLS(next);
       return next;
     });
+    logAudit({ action: "TEST_TOGGLE", target: `test:${id}` });
     if (supa) {
       void (async () => {
         const cur = (
@@ -195,6 +202,7 @@ export function useTestsStore() {
     setList((prev) => prev.filter((t) => t.id !== id));
     if (supa) void supa.from("quiz_tests").delete().eq("id", id);
     else writeLS(readLS().filter((t) => t.id !== id));
+    logAudit({ action: "TEST_DELETE", target: `test:${id}` });
   }, []);
 
   const importMany = useCallback((tests: ManagedTest[]) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
 
 export interface Brochure {
@@ -100,10 +101,11 @@ export function useBrochures() {
 
   const add = useCallback((b: Omit<Brochure, "id" | "order">) => {
     const supa = getSupabase();
+    const id = `br_${Date.now()}`;
     setList((prev) => {
       const full: Brochure = {
         ...b,
-        id: `br_${Date.now()}`,
+        id,
         order: prev.length + 1,
       };
       if (supa) {
@@ -116,6 +118,7 @@ export function useBrochures() {
       }
       return [...prev, full];
     });
+    logAudit({ action: "BROCHURE_CREATE", target: `alumni:${b.title}` });
   }, []);
 
   const update = useCallback((id: string, patch: Partial<Brochure>) => {
@@ -153,6 +156,7 @@ export function useBrochures() {
           if (error) console.warn("[brochures] delete error:", error.message);
         });
     }
+    logAudit({ action: "BROCHURE_DELETE", target: `alumni:${id}` });
   }, []);
 
   const move = useCallback((id: string, dir: -1 | 1) => {

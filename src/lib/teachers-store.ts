@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { logAudit } from "./audit-store";
 import { mockTeachers } from "./mock-data";
 import type { Teacher } from "./types";
 
@@ -202,19 +203,26 @@ export function useTeacherProfiles() {
   }, []);
 
   const upsert = useCallback((p: TeacherProfile) => {
-    setList((prev) =>
-      prev.some((t) => t.id === p.id)
+    let isNew = true;
+    setList((prev) => {
+      isNew = !prev.some((t) => t.id === p.id);
+      return prev.some((t) => t.id === p.id)
         ? prev.map((t) => (t.id === p.id ? p : t))
-        : [p, ...prev]
-    );
+        : [p, ...prev];
+    });
     const supa = getSupabase();
     if (supa) void supa.from("teacher_profiles").upsert(toDb(p));
+    logAudit({
+      action: isNew ? "TEACHER_CREATE" : "TEACHER_UPDATE",
+      target: `teacher:${p.id} ${p.name}`,
+    });
   }, []);
 
   const remove = useCallback((id: string) => {
     setList((prev) => prev.filter((t) => t.id !== id));
     const supa = getSupabase();
     if (supa) void supa.from("teacher_profiles").delete().eq("id", id);
+    logAudit({ action: "TEACHER_DELETE", target: `teacher:${id}` });
   }, []);
 
   const reset = useCallback(() => {

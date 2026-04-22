@@ -1,5 +1,9 @@
 name: CI
 
+# Staging = shiinbii (auto via push/PR)
+# Production = production (manual push dari operator, TIDAK ter-trigger dari shiinbii)
+# Tiap push ke 1 branch hanya menjalankan CI untuk branch itu sendiri —
+# tidak ada step yang memindahkan kode antar branch.
 on:
   push:
     branches: [shiinbii, production]
@@ -8,7 +12,7 @@ on:
 
 jobs:
   typecheck:
-    name: Typecheck & Lint
+    name: Typecheck & Lint (${{ github.ref_name }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -47,3 +47,10 @@ next-env.d.ts
 
 .wrangler/
 .open-next/
+
+# Claude Code / Anthropic local artifacts — jangan di-push
+.claude/
+.claude.json
+.claude.local.json
+CLAUDE.md
+.mcp.json

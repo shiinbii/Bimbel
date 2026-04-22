@@ -1,0 +1,333 @@
+import type {
+  User,
+  PointPackage,
+  Test,
+  Question,
+  ZoomSession,
+  Transaction,
+  ChatMessage,
+  Teacher,
+  Student,
+  AuditLog,
+  Testimonial,
+} from "./types";
+
+export const mockUser: User = {
+  id: "u_001",
+  name: "Rafa Pratama",
+  email: "rafa@edudoc.id",
+  phone: "+62 812-3456-7890",
+  role: "STUDENT",
+  points: 850,
+  totalEarn: 2500,
+  totalSpent: 1650,
+  joinedAt: "2025-11-12",
+};
+
+export const mockPackages: PointPackage[] = [
+  {
+    id: "pkg_starter",
+    name: "Starter",
+    price: 50_000,
+    points: 100,
+    description: "Cocok untuk mencoba platform EduDoc pertama kali.",
+  },
+  {
+    id: "pkg_basic",
+    name: "Basic",
+    price: 100_000,
+    points: 250,
+    description: "Paket hemat untuk belajar rutin mingguan.",
+  },
+  {
+    id: "pkg_pro",
+    name: "Pro",
+    price: 200_000,
+    points: 600,
+    popular: true,
+    description: "Paling populer — hemat lebih banyak untuk quiz & sesi.",
+  },
+  {
+    id: "pkg_premium",
+    name: "Premium",
+    price: 350_000,
+    points: 1200,
+    bonus: 200,
+    description: "Dapat bonus 200 poin + akses prioritas live zoom.",
+  },
+];
+
+const makeQuestions = (seed: string): Question[] =>
+  Array.from({ length: 10 }).map((_, i) => ({
+    id: `${seed}_q${i + 1}`,
+    text: `(${seed.toUpperCase()} #${i + 1}) Sebuah persamaan kuadrat memiliki akar-akar x₁ dan x₂. Jika x₁ + x₂ = ${i + 2} dan x₁·x₂ = ${i + 3}, maka persamaan kuadrat tersebut adalah?`,
+    options: [
+      { key: "A", text: `x² - ${i + 2}x + ${i + 3} = 0` },
+      { key: "B", text: `x² + ${i + 2}x + ${i + 3} = 0` },
+      { key: "C", text: `x² - ${i + 2}x - ${i + 3} = 0` },
+      { key: "D", text: `x² + ${i + 2}x - ${i + 3} = 0` },
+    ],
+    correct: (["A", "B", "C", "D"] as const)[i % 4],
+    explanation: `Gunakan rumus jumlah dan hasil kali akar: x² - (x₁+x₂)x + (x₁·x₂) = 0. Substitusi nilai yang diberikan sehingga didapat bentuk x² - ${i + 2}x + ${i + 3} = 0.`,
+  }));
+
+export const mockTests: Test[] = [
+  {
+    id: "t_mat_pre",
+    title: "Pre-Test Matematika Wajib",
+    subject: "Matematika",
+    type: "PRE_TEST",
+    duration: 20,
+    cost: 0,
+    totalQuestions: 10,
+    requireVideo: false,
+    passingScore: 60,
+    description: "Pre-test untuk memetakan kemampuan dasar aljabar dan geometri.",
+    questions: makeQuestions("mat_pre"),
+  },
+  {
+    id: "t_fis_exam",
+    title: "Ujian Fisika — Mekanika",
+    subject: "Fisika",
+    type: "EXAM",
+    duration: 45,
+    cost: 80,
+    totalQuestions: 10,
+    requireVideo: false,
+    passingScore: 70,
+    description: "Ujian komprehensif Hukum Newton, momentum, dan energi mekanik.",
+    questions: makeQuestions("fis_exam"),
+  },
+  {
+    id: "t_bio_video",
+    title: "Video Quiz — Sistem Peredaran Darah",
+    subject: "Biologi",
+    type: "VIDEO_QUIZ",
+    duration: 30,
+    cost: 50,
+    totalQuestions: 10,
+    requireVideo: true,
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    passingScore: 65,
+    description: "Tonton materi video terlebih dahulu sebelum mengerjakan soal.",
+    questions: makeQuestions("bio_video"),
+  },
+  {
+    id: "t_kim_exam",
+    title: "Ujian Kimia — Stoikiometri",
+    subject: "Kimia",
+    type: "EXAM",
+    duration: 40,
+    cost: 75,
+    totalQuestions: 10,
+    requireVideo: false,
+    passingScore: 70,
+    description: "Uji pemahaman konsep mol, persamaan reaksi, dan perhitungan kimia.",
+    questions: makeQuestions("kim_exam"),
+  },
+  {
+    id: "t_ing_pre",
+    title: "Pre-Test Bahasa Inggris",
+    subject: "Bahasa Inggris",
+    type: "PRE_TEST",
+    duration: 25,
+    cost: 0,
+    totalQuestions: 10,
+    requireVideo: false,
+    passingScore: 60,
+    description: "Pemetaan grammar dan vocabulary tingkat SMA.",
+    questions: makeQuestions("ing_pre"),
+  },
+  {
+    id: "t_sej_video",
+    title: "Video Quiz — Sejarah Kemerdekaan",
+    subject: "Sejarah",
+    type: "VIDEO_QUIZ",
+    duration: 35,
+    cost: 60,
+    totalQuestions: 10,
+    requireVideo: true,
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    passingScore: 65,
+    description: "Materi video tentang peristiwa penting menjelang Proklamasi 1945.",
+    questions: makeQuestions("sej_video"),
+  },
+];
+
+// Fixed base date biar SSR & client render nilai yang sama — kalau pakai
+// Date.now() hydration mismatch karena waktu berlalu antar SSR dan hydrate.
+const MOCK_BASE_MS = new Date("2026-04-22T08:00:00Z").getTime();
+const nowISO = (offsetMinutes: number) =>
+  new Date(MOCK_BASE_MS + offsetMinutes * 60_000).toISOString();
+
+export const mockZoomSessions: ZoomSession[] = [
+  {
+    id: "z_001",
+    title: "Pembahasan UTBK Matematika 2026",
+    teacher: "Ibu Anjani",
+    subject: "Matematika",
+    scheduledAt: nowISO(60 * 3),
+    duration: 90,
+    cost: 150,
+    maxParticipants: 100,
+    currentParticipants: 42,
+    status: "SCHEDULED",
+    description:
+      "Sesi live membahas strategi pengerjaan soal UTBK bagian Matematika Saintek.",
+    meetingUrl: "https://zoom.us/j/mock-edudoc-001",
+  },
+  {
+    id: "z_002",
+    title: "Live — Kimia Organik",
+    teacher: "Pak Rizal",
+    subject: "Kimia",
+    scheduledAt: nowISO(-5),
+    duration: 60,
+    cost: 120,
+    maxParticipants: 80,
+    currentParticipants: 58,
+    status: "LIVE",
+    description: "Sesi tanya jawab reaksi organik dengan kasus real dari soal ujian.",
+    meetingUrl: "https://zoom.us/j/mock-edudoc-002",
+  },
+  {
+    id: "z_003",
+    title: "English Speaking Bootcamp",
+    teacher: "Ms. Clara",
+    subject: "Bahasa Inggris",
+    scheduledAt: nowISO(60 * 24),
+    duration: 75,
+    cost: 100,
+    maxParticipants: 50,
+    currentParticipants: 20,
+    status: "SCHEDULED",
+    description: "Latihan speaking berbasis topik populer untuk TOEFL/IELTS.",
+    meetingUrl: "https://zoom.us/j/mock-edudoc-003",
+  },
+  {
+    id: "z_004",
+    title: "Fisika — Listrik & Magnet",
+    teacher: "Pak Fajar",
+    subject: "Fisika",
+    scheduledAt: nowISO(-60 * 24),
+    duration: 60,
+    cost: 110,
+    maxParticipants: 70,
+    currentParticipants: 70,
+    status: "ENDED",
+    description: "Sesi sudah selesai. Rekaman dapat diakses melalui kelas.",
+    meetingUrl: "https://zoom.us/j/mock-edudoc-004",
+  },
+  {
+    id: "z_005",
+    title: "Biologi — Sistem Saraf",
+    teacher: "Ibu Ratna",
+    subject: "Biologi",
+    scheduledAt: nowISO(60 * 48),
+    duration: 90,
+    cost: 130,
+    maxParticipants: 60,
+    currentParticipants: 11,
+    status: "SCHEDULED",
+    description: "Live kelas biologi membahas sistem saraf pusat dan perifer.",
+    meetingUrl: "https://zoom.us/j/mock-edudoc-005",
+  },
+];
+
+export const mockTransactions: Transaction[] = [
+  { id: "TX0001", user: "Rafa Pratama", package: "Pro", amount: 200_000, points: 600, method: "GoPay", status: "SUCCESS", createdAt: "2026-04-20 14:32" },
+  { id: "TX0002", user: "Sinta Maulida", package: "Basic", amount: 100_000, points: 250, method: "BCA VA", status: "SUCCESS", createdAt: "2026-04-20 13:01" },
+  { id: "TX0003", user: "Bima Satria", package: "Starter", amount: 50_000, points: 100, method: "QRIS", status: "PENDING", createdAt: "2026-04-20 11:42" },
+  { id: "TX0004", user: "Aulia Dewi", package: "Premium", amount: 350_000, points: 1400, method: "Kartu Kredit", status: "FAILED", createdAt: "2026-04-20 10:11" },
+  { id: "TX0005", user: "Rafa Pratama", package: "Basic", amount: 100_000, points: 250, method: "GoPay", status: "SUCCESS", createdAt: "2026-04-19 21:28" },
+  { id: "TX0006", user: "Dani Saputra", package: "Pro", amount: 200_000, points: 600, method: "Mandiri VA", status: "SUCCESS", createdAt: "2026-04-19 19:02" },
+  { id: "TX0007", user: "Keysha Nabila", package: "Starter", amount: 50_000, points: 100, method: "QRIS", status: "SUCCESS", createdAt: "2026-04-19 17:41" },
+  { id: "TX0008", user: "Irfan Hakim", package: "Premium", amount: 350_000, points: 1400, method: "BNI VA", status: "PENDING", createdAt: "2026-04-19 15:10" },
+  { id: "TX0009", user: "Nadhira Putri", package: "Pro", amount: 200_000, points: 600, method: "GoPay", status: "SUCCESS", createdAt: "2026-04-18 22:22" },
+  { id: "TX0010", user: "Rafi Ahmad", package: "Basic", amount: 100_000, points: 250, method: "QRIS", status: "SUCCESS", createdAt: "2026-04-18 20:05" },
+];
+
+export const mockChatMessages: ChatMessage[] = [
+  { id: "m1", user: "Pak Rizal", message: "Halo semuanya, 5 menit lagi kita mulai ya!", time: "19:25", isTeacher: true },
+  { id: "m2", user: "Rafa", message: "Siap pak 🙌", time: "19:25" },
+  { id: "m3", user: "Sinta", message: "Hadir pak", time: "19:26" },
+  { id: "m4", user: "Bima", message: "Pak, hari ini bahas reaksi apa aja?", time: "19:26" },
+  { id: "m5", user: "Pak Rizal", message: "Reaksi organik + soal tipe UTBK tahun lalu", time: "19:27", isTeacher: true },
+  { id: "m6", user: "Aulia", message: "Wah seru 🔥", time: "19:27" },
+  { id: "m7", user: "Keysha", message: "Boleh minta slide PDF-nya gak pak?", time: "19:28" },
+  { id: "m8", user: "Pak Rizal", message: "Nanti saya share di akhir sesi ya", time: "19:28", isTeacher: true },
+];
+
+export const mockTeachers: Teacher[] = [
+  { id: "t1", name: "Ibu Anjani", email: "anjani@edudoc.id", subject: "Matematika", rating: 4.9, students: 312, sessions: 48, status: "ACTIVE" },
+  { id: "t2", name: "Pak Rizal", email: "rizal@edudoc.id", subject: "Kimia", rating: 4.8, students: 250, sessions: 39, status: "ACTIVE" },
+  { id: "t3", name: "Ms. Clara", email: "clara@edudoc.id", subject: "Bahasa Inggris", rating: 4.95, students: 401, sessions: 60, status: "ACTIVE" },
+  { id: "t4", name: "Pak Fajar", email: "fajar@edudoc.id", subject: "Fisika", rating: 4.7, students: 187, sessions: 33, status: "ACTIVE" },
+  { id: "t5", name: "Ibu Ratna", email: "ratna@edudoc.id", subject: "Biologi", rating: 4.85, students: 220, sessions: 41, status: "INACTIVE" },
+];
+
+export const mockStudents: Student[] = Array.from({ length: 20 }).map((_, i) => ({
+  id: `s${i + 1}`,
+  name: [
+    "Rafa Pratama", "Sinta Maulida", "Bima Satria", "Aulia Dewi", "Dani Saputra",
+    "Keysha Nabila", "Irfan Hakim", "Nadhira Putri", "Rafi Ahmad", "Salsa Kirana",
+    "Farrel Gantara", "Dinda Permata", "Reyhan Fadli", "Kirana Ayu", "Ghaisan Arya",
+    "Zahra Adila", "Fathur Rizki", "Citra Rahayu", "Haris Prima", "Maya Lestari",
+  ][i],
+  email: `student${i + 1}@edudoc.id`,
+  phone: `+62 812-${1000 + i}-${2000 + i}`,
+  points: Math.floor(Math.random() * 2000) + 100,
+  completedTests: Math.floor(Math.random() * 25),
+  joinedAt: `2025-${String((i % 12) + 1).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`,
+  status: i % 7 === 0 ? "INACTIVE" : "ACTIVE",
+}));
+
+export const mockAuditLogs: AuditLog[] = Array.from({ length: 15 }).map((_, i) => ({
+  id: `log_${i + 1}`,
+  action: [
+    "USER_LOGIN", "PACKAGE_CREATE", "PACKAGE_UPDATE", "USER_DEACTIVATE",
+    "SESSION_CREATE", "TEST_CREATE", "FEATURE_TOGGLE", "ROLE_CHANGE",
+    "PAYMENT_REFUND", "TEACHER_APPROVE", "USER_LOGIN", "SETTINGS_UPDATE",
+    "USER_DELETE", "SESSION_CANCEL", "PACKAGE_DELETE",
+  ][i],
+  user: ["admin@edudoc.id", "superadmin@edudoc.id"][i % 2],
+  role: (["ADMIN", "SUPER_ADMIN"] as const)[i % 2],
+  target: ["user:s3", "pkg_pro", "session:z_002", "teacher:t4", "settings:otp"][i % 5],
+  ip: `103.${(i * 13) % 255}.${(i * 7) % 255}.${(i * 3) % 255}`,
+  time: `2026-04-${String(20 - (i % 10)).padStart(2, "0")} ${10 + (i % 10)}:${String((i * 7) % 60).padStart(2, "0")}`,
+}));
+
+export const mockTestimonials: Testimonial[] = [
+  {
+    id: "ts1",
+    name: "Naomi Ardelia",
+    role: "Siswa SMA kelas 12",
+    rating: 5,
+    message: "Platform EduDoc bikin belajar jadi terarah. Sistem poin-nya unik, quiz adaptif, dan guru-gurunya sabar banget pas sesi live!",
+  },
+  {
+    id: "ts2",
+    name: "Arkan Yudhistira",
+    role: "Lolos SNBT 2026",
+    rating: 5,
+    message: "Fitur video quiz EduDoc game changer — saya bisa pahami materi dulu, langsung uji dengan soal tipe UTBK. Recommended!",
+  },
+  {
+    id: "ts3",
+    name: "Zahra Aqila",
+    role: "Siswa SMA kelas 11",
+    rating: 4.8,
+    message: "Jadwal zoomnya fleksibel, chat room seru banget. Rasanya kayak belajar sama teman sekelas walaupun online.",
+  },
+  {
+    id: "ts4",
+    name: "Ibu Astrid",
+    role: "Orang tua siswa",
+    rating: 5,
+    message: "Laporan progres anak jelas, pembayaran aman. Harga paket juga masuk akal untuk kualitas bimbel premium seperti ini.",
+  },
+];
+
+export const subjectList = [
+  "Semua", "Matematika", "Fisika", "Kimia", "Biologi", "Bahasa Inggris", "Sejarah",
+];

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime, @{N='Mem\\(MB\\)';E={[math]::Round\\($_.WorkingSet64/1MB,1\\)}} | Format-Table -AutoSize)",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(yarn *)",
+      "Bash(grep -oE 'ID.{1,3}User.{1,3}Paket.{1,3}Nilai.{1,3}Poin.{1,3}Metode.{1,3}Status.{1,3}Waktu' \"D:/kerja/edudoc-acorn/.next/static/chunks/e328dcbe458d635e.js\")",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(git reset *)",
+      "Bash(git checkout-index *)",
+      "Bash(awk '{print $1}')",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}

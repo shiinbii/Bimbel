@@ -1,0 +1,391 @@
+@import "tailwindcss";
+
+/* LIGHT (default) tokens — baked into Tailwind @theme */
+@theme {
+  --color-bg: #f7f8fc;
+  --color-bg-elevated: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-soft: #eef0fa;
+  --color-border: #e2e5f0;
+  --color-border-soft: #edeff7;
+
+  --color-primary: #6366f1;
+  --color-primary-soft: #818cf8;
+  --color-primary-dark: #4f46e5;
+
+  --color-gold: #d97706;
+  --color-gold-soft: #f59e0b;
+  --color-gold-dark: #b45309;
+
+  --color-success: #059669;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --color-info: #2563eb;
+
+  --color-text: #0f172a;
+  --color-text-soft: #475569;
+  --color-text-mute: #94a3b8;
+
+  --font-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* DARK mode overrides — unscoped (outside @layer) so they win over @theme */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #07091a;
+  --color-bg-elevated: #0d1028;
+  --color-bg-card: #111536;
+  --color-bg-soft: #161a44;
+  --color-border: #242a5c;
+  --color-border-soft: #1a1f4a;
+
+  --color-text: #e2e8f0;
+  --color-text-soft: #94a3b8;
+  --color-text-mute: #64748b;
+
+  --color-gold: #f59e0b;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+}
+
+@layer base {
+  :root { color-scheme: light; }
+
+  html, body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(99, 102, 241, 0.08), transparent 60%),
+      radial-gradient(1000px 500px at -10% 110%, rgba(245, 158, 11, 0.05), transparent 60%),
+      var(--color-bg);
+    min-height: 100vh;
+  }
+  html[data-theme="dark"] body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(99, 102, 241, 0.12), transparent 60%),
+      radial-gradient(1000px 500px at -10% 110%, rgba(245, 158, 11, 0.08), transparent 60%),
+      var(--color-bg);
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.25);
+    color: var(--color-text);
+  }
+  html[data-theme="dark"] ::selection {
+    background: rgba(99, 102, 241, 0.35);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.25); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #78350f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html[data-theme="dark"] .text-gradient-gold {
+    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #b45309 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #312e81 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html[data-theme="dark"] .text-gradient-primary {
+    background: linear-gradient(135deg, #c7d2fe 0%, #6366f1 50%, #4338ca 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(99,102,241,0.02));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+  }
+  html[data-theme="dark"] .glass {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .card {
+    background: linear-gradient(160deg, rgba(99, 102, 241, 0.05) 0%, #ffffff 60%);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 1rem;
+    color: var(--color-text);
+  }
+  html[data-theme="dark"] .card {
+    background: linear-gradient(160deg, rgba(99, 102, 241, 0.08) 0%, rgba(17, 21, 54, 0.8) 60%);
+  }
+
+  .card-hover { transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 20px 50px -20px rgba(99, 102, 241, 0.25);
+  }
+
+  .glow-primary { box-shadow: 0 0 0 1px rgba(99,102,241,0.3), 0 20px 60px -10px rgba(99,102,241,0.25); }
+  html[data-theme="dark"] .glow-primary { box-shadow: 0 0 0 1px rgba(99,102,241,0.4), 0 20px 60px -10px rgba(99,102,241,0.5); }
+  .glow-gold { box-shadow: 0 0 0 1px rgba(245,158,11,0.4), 0 20px 60px -10px rgba(245,158,11,0.35); }
+  html[data-theme="dark"] .glow-gold { box-shadow: 0 0 0 1px rgba(245,158,11,0.5), 0 20px 60px -10px rgba(245,158,11,0.5); }
+
+  .shine { position: relative; overflow: hidden; }
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,0.15) 50%, transparent 80%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .shine:hover::after { transform: translateX(100%); }
+
+  .live-pulse { animation: livePulse 1.5s infinite; }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  html[data-theme="dark"] .grid-bg {
+    background-image:
+      linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+}
+
+/* =========================================================================
+   LIGHT-MODE ADAPTATIONS for dark-assumed hardcoded classes.
+   The UI was originally styled for dark mode — many components hardcode
+   text-white, bg-white/[n], border-white/[n]. In LIGHT mode (default),
+   these rules force readable colors and surfaces. Dark mode is untouched.
+   ========================================================================= */
+
+html:not([data-theme="dark"]) .text-white,
+html:not([data-theme="dark"]) .text-white\/90,
+html:not([data-theme="dark"]) .text-white\/95 {
+  color: var(--color-text) !important;
+}
+html:not([data-theme="dark"]) .text-white\/80,
+html:not([data-theme="dark"]) .text-white\/75,
+html:not([data-theme="dark"]) .text-white\/70,
+html:not([data-theme="dark"]) .text-white\/60,
+html:not([data-theme="dark"]) .text-white\/50 {
+  color: var(--color-text-soft) !important;
+}
+html:not([data-theme="dark"]) .text-white\/40,
+html:not([data-theme="dark"]) .text-white\/30,
+html:not([data-theme="dark"]) .text-white\/20,
+html:not([data-theme="dark"]) .text-white\/15 {
+  color: var(--color-text-mute) !important;
+}
+
+html:not([data-theme="dark"]) .border-white\/5,
+html:not([data-theme="dark"]) .border-white\/10,
+html:not([data-theme="dark"]) .border-white\/15,
+html:not([data-theme="dark"]) .border-white\/20,
+html:not([data-theme="dark"]) .border-white\/25,
+html:not([data-theme="dark"]) .border-white\/30,
+html:not([data-theme="dark"]) .border-white\/40,
+html:not([data-theme="dark"]) .border-white\/50,
+html:not([data-theme="dark"]) .border-white\/60 {
+  border-color: var(--color-border) !important;
+}
+
+html:not([data-theme="dark"]) .bg-white\/5,
+html:not([data-theme="dark"]) .bg-white\/10,
+html:not([data-theme="dark"]) .bg-white\/12,
+html:not([data-theme="dark"]) .bg-white\/15,
+html:not([data-theme="dark"]) .bg-white\/20,
+html:not([data-theme="dark"]) .bg-white\/\[0\.02\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.03\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.04\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.05\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.06\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.08\],
+html:not([data-theme="dark"]) .bg-white\/\[0\.1\] {
+  background-color: var(--color-bg-soft) !important;
+}
+
+/* Light mode: ring-white/XX juga jadi border token */
+html:not([data-theme="dark"]) .ring-white\/5,
+html:not([data-theme="dark"]) .ring-white\/10,
+html:not([data-theme="dark"]) .ring-white\/20 {
+  --tw-ring-color: var(--color-border) !important;
+}
+
+/* Dark-assumed dark-bg containers need light-mode inverse */
+html:not([data-theme="dark"]) .bg-black\/20,
+html:not([data-theme="dark"]) .bg-black\/30,
+html:not([data-theme="dark"]) .bg-black\/40,
+html:not([data-theme="dark"]) .bg-black\/45,
+html:not([data-theme="dark"]) .bg-black\/50,
+html:not([data-theme="dark"]) .bg-black\/60,
+html:not([data-theme="dark"]) .bg-black\/70,
+html:not([data-theme="dark"]) .bg-black\/80,
+html:not([data-theme="dark"]) .bg-black\/85 {
+  background-color: var(--color-bg-soft) !important;
+}
+
+/* Navbar / sidebar / modal surfaces use [var(--color-bg-elevated)]/xx */
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg-elevated\)\]\/60,
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg-elevated\)\]\/70,
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg-elevated\)\]\/80,
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg-elevated\)\]\/85,
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg-elevated\)\]\/95 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg\)\]\/60,
+html:not([data-theme="dark"]) .bg-\[var\(--color-bg\)\]\/70 {
+  background-color: rgba(247, 248, 252, 0.85) !important;
+}
+
+/* Hex hardcoded styles sudah tidak ada (diganti var(--color-bg) di inline style),
+   jadi override ini tidak diperlukan lagi. Baris sengaja dihapus. */
+
+/* Gradient icon backgrounds that use saturated indigo gradient:
+   keep them — they look fine on both themes. */
+
+/* Sidebar / dropdown backdrops using backdrop-blur-xl need a solid base
+   in light mode since the indigo gradients are very faint. */
+html:not([data-theme="dark"]) .backdrop-blur-xl.bg-white\/\[0\.02\],
+html:not([data-theme="dark"]) .backdrop-blur-xl.bg-white\/\[0\.04\] {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+}
+
+/* Sidebar active item uses bg-white/[0.04] border-[var(--color-border)] */
+html:not([data-theme="dark"]) aside .bg-white\/\[0\.04\] {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+/* ring-offset tokens */
+html:not([data-theme="dark"]) .ring-offset-\[var\(--color-bg\)\] {
+  --tw-ring-offset-color: var(--color-bg) !important;
+}
+html:not([data-theme="dark"]) .ring-offset-\[var\(--color-bg-elevated\)\] {
+  --tw-ring-offset-color: var(--color-bg-elevated) !important;
+}
+
+/* ================== PLACEHOLDER + FOCUS ================== */
+/* Input placeholder pakai text-mute token di light */
+html:not([data-theme="dark"]) input::placeholder,
+html:not([data-theme="dark"]) textarea::placeholder {
+  color: var(--color-text-mute);
+}
+
+/* ================== DARK-MODE LEGIBILITY TWEAKS ================== */
+/* Beberapa text-<color>-300 di komponen muncul di light — terlalu
+   soft saat bg putih. Kasih kontras tambahan khusus light mode. */
+html:not([data-theme="dark"]) .text-indigo-300 { color: #4338ca !important; }
+html:not([data-theme="dark"]) .text-indigo-200 { color: #4338ca !important; }
+html:not([data-theme="dark"]) .text-amber-300  { color: #b45309 !important; }
+html:not([data-theme="dark"]) .text-amber-200  { color: #b45309 !important; }
+html:not([data-theme="dark"]) .text-emerald-300 { color: #047857 !important; }
+html:not([data-theme="dark"]) .text-emerald-200 { color: #047857 !important; }
+html:not([data-theme="dark"]) .text-red-300    { color: #b91c1c !important; }
+html:not([data-theme="dark"]) .text-red-200    { color: #b91c1c !important; }
+html:not([data-theme="dark"]) .text-sky-300    { color: #0369a1 !important; }
+html:not([data-theme="dark"]) .text-slate-300  { color: var(--color-text-soft) !important; }
+html:not([data-theme="dark"]) .text-slate-400  { color: var(--color-text-mute) !important; }
+
+/* .card di light: gradient terlalu kuat putih-putih. Jaga contrast */
+html:not([data-theme="dark"]) .card {
+  background: linear-gradient(160deg, rgba(99, 102, 241, 0.05) 0%, #ffffff 60%);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04),
+              0 1px 2px 0 rgba(15, 23, 42, 0.03);
+}
+
+/* Gradient from-...-500/10 to-transparent di light sangat faint.
+   Kasih solid bg kalau dipakai sebagai container utama (pop over / modal card). */
+html:not([data-theme="dark"]) .bg-gradient-to-br.from-indigo-500\/20,
+html:not([data-theme="dark"]) .bg-gradient-to-br.from-indigo-500\/10 {
+  background-image: linear-gradient(
+    to bottom right,
+    rgba(99, 102, 241, 0.08),
+    rgba(99, 102, 241, 0.02)
+  );
+}
+
+/* ================== MODAL & DROPDOWN KONTRAS ================== */
+/* Modal bg dengan opacity rendah terlihat tembus di light. Paksa solid. */
+html:not([data-theme="dark"]) .backdrop-blur-xl.bg-\[var\(--color-bg-elevated\)\]\/95,
+html:not([data-theme="dark"]) .backdrop-blur-xl.bg-\[var\(--color-bg-elevated\)\]\/90,
+html:not([data-theme="dark"]) .backdrop-blur-xl.bg-\[var\(--color-bg-elevated\)\]\/85 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+}
+
+/* Toast custom background di light mode — assumed dark */
+html:not([data-theme="dark"]) [data-sonner-toast],
+html:not([data-theme="dark"]) .go3958317564 {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Card border-soft di light mode — bikin sedikit lebih visible */
+html:not([data-theme="dark"]) .card {
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+/* Helpdesk bubble chat text — pastikan kontras di light */
+html:not([data-theme="dark"]) .bg-indigo-500\/15.text-\[var\(--color-text\)\],
+html:not([data-theme="dark"]) .bg-indigo-500\/20.text-\[var\(--color-text\)\] {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Amber-500/25 gradient bubbles (my message in helpdesk) */
+html:not([data-theme="dark"]) .from-amber-500\/25,
+html:not([data-theme="dark"]) .from-amber-500\/20 {
+  --tw-gradient-from: rgba(245, 158, 11, 0.12);
+}
+
+/* Input autofill background */
+html:not([data-theme="dark"]) input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+}
+
+/* Scrollbar light mode — default dark indigo too intense on white */
+html:not([data-theme="dark"]) ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+}
+html:not([data-theme="dark"]) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
+}

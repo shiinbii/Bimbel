@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Formik, Form } from "formik";
+import { useRef, useState } from "react";
+import { Formik, Form, type FormikProps } from "formik";
 import { useSnackbar } from "notistack";
 import * as Yup from "yup";
 
 import {
+  Avatar,
   Box,
   Button,
   Card,
@@ -25,14 +26,17 @@ import {
 import NiArrowLeft from "@/icons/nexture/ni-arrow-left";
 import NiArrowRight from "@/icons/nexture/ni-arrow-right";
 import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
+import NiCamera from "@/icons/nexture/ni-camera";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiPlus from "@/icons/nexture/ni-plus";
 import { useBrochures, type Brochure } from "@/lib/brochures-store";
 
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+
 const Schema = Yup.object({
-  title: Yup.string().trim().required("Judul wajib"),
+  title: Yup.string().trim().min(2, "Minimal 2 karakter").required("Judul wajib diisi"),
   subtitle: Yup.string().trim(),
-  image: Yup.string().trim().url("URL tidak valid").required("URL gambar wajib"),
+  image: Yup.string().required("Foto wajib diupload"),
 });
 
 type Draft = Omit<Brochure, "id" | "order"> & { id?: string };
@@ -122,20 +126,12 @@ export default function AdminBrochuresPage() {
               setEditing(null);
             }}
           >
-            {({ values, handleChange, handleBlur, errors, touched, submitForm }) => (
-              <Form>
-                <DialogContent>
-                  <Stack spacing={2}>
-                    <TextField fullWidth label="Judul" name="title" value={values.title} onChange={handleChange} onBlur={handleBlur} error={touched.title && !!errors.title} helperText={touched.title && errors.title} />
-                    <TextField fullWidth label="Subtitle (opsional)" name="subtitle" value={values.subtitle} onChange={handleChange} />
-                    <TextField fullWidth label="URL Gambar" name="image" value={values.image} onChange={handleChange} onBlur={handleBlur} error={touched.image && !!errors.image} helperText={touched.image && errors.image} placeholder="https://..." />
-                  </Stack>
-                </DialogContent>
-                <DialogActions>
-                  <Button variant="paper" color="grey" onClick={() => setEditing(null)}>Batal</Button>
-                  <Button variant="contained" color="primary" onClick={submitForm}>Simpan</Button>
-                </DialogActions>
-              </Form>
+            {(formik) => (
+              <BrochureFormBody
+                formik={formik}
+                onCancel={() => setEditing(null)}
+                onInvalidFile={(msg) => enqueueSnackbar(msg, { variant: "error" })}
+              />
             )}
           </Formik>
         )}
@@ -150,5 +146,136 @@ export default function AdminBrochuresPage() {
         </DialogActions>
       </Dialog>
     </Grid>
+  );
+}
+
+function BrochureFormBody({
+  formik,
+  onCancel,
+  onInvalidFile,
+}: {
+  formik: FormikProps<Draft>;
+  onCancel: () => void;
+  onInvalidFile: (msg: string) => void;
+}) {
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue, submitForm } = formik;
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onPickFile = () => fileRef.current?.click();
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      onInvalidFile("File harus gambar (PNG/JPG/WebP)");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      onInvalidFile("Ukuran maksimal 3MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setFieldValue("image", String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => setFieldValue("image", "");
+
+  return (
+    <Form>
+      <DialogContent>
+        <Grid container spacing={2.5} alignItems="flex-start">
+          <Grid size={{ xs: 12, sm: "auto" }}>
+            <Stack spacing={1} alignItems="center">
+              <Box sx={{ position: "relative" }}>
+                <Avatar
+                  src={values.image || undefined}
+                  onClick={onPickFile}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    cursor: "pointer",
+                    bgcolor: "action.hover",
+                    color: "text.secondary",
+                    transition: "opacity .15s",
+                    "&:hover": { opacity: 0.85 },
+                  }}
+                >
+                  <NiCamera size="large" />
+                </Avatar>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={onPickFile}
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    bgcolor: "background.paper",
+                    boxShadow: 1,
+                    "&:hover": { bgcolor: "background.paper" },
+                  }}
+                >
+                  <NiCamera size="small" />
+                </IconButton>
+              </Box>
+              <Typography variant="caption" className="text-text-secondary" align="center">
+                Klik untuk upload
+                <br />
+                (PNG/JPG, maks 3MB)
+              </Typography>
+              {values.image && (
+                <Button size="tiny" variant="text" color="error" onClick={clearImage}>
+                  Hapus foto
+                </Button>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                onChange={onFileChange}
+              />
+              {touched.image && errors.image && (
+                <Typography variant="caption" color="error">
+                  {errors.image as string}
+                </Typography>
+              )}
+            </Stack>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: "grow" }}>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                label="Nama Alumni"
+                name="title"
+                value={values.title}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={!!(touched.title && errors.title)}
+                helperText={(touched.title && errors.title) as string}
+                placeholder="Contoh: Naomi Ardelia"
+              />
+              <TextField
+                fullWidth
+                label="Keterangan (opsional)"
+                name="subtitle"
+                value={values.subtitle}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Contoh: Lolos Kedokteran UI 2025"
+                helperText="Tampil di bawah nama pada slider"
+              />
+            </Stack>
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="paper" color="grey" onClick={onCancel}>Batal</Button>
+        <Button variant="contained" color="primary" onClick={submitForm}>Simpan</Button>
+      </DialogActions>
+    </Form>
   );
 }

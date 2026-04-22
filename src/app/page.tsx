@@ -284,21 +284,28 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Swiper
-              modules={[Autoplay, Pagination]}
+              modules={[Autoplay, Navigation, Pagination]}
               spaceBetween={20}
               slidesPerView={1}
-              autoplay={{ delay: 3500, disableOnInteraction: false }}
+              speed={500}
+              autoplay={{
+                delay: 4000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+                waitForTransition: true,
+              }}
+              navigation
               pagination={{ clickable: true }}
               loop={brochures.length > 2}
               breakpoints={{
                 640: { slidesPerView: 2 },
                 1024: { slidesPerView: 3 },
               }}
-              style={{ paddingBottom: 40 }}
+              style={{ paddingBottom: 50 }}
             >
               {brochures.map((b) => (
                 <SwiperSlide key={b.id}>
-                  <Card sx={{ overflow: "hidden" }}>
+                  <Card sx={{ overflow: "hidden", height: "100%" }}>
                     <Box
                       component="img"
                       src={b.image}
@@ -484,35 +491,106 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Swiper
-              modules={[Autoplay, Pagination]}
-              spaceBetween={20}
+              modules={[Autoplay, Navigation, Pagination]}
+              spaceBetween={24}
               slidesPerView={1}
-              autoplay={{ delay: 5000, disableOnInteraction: false }}
+              speed={500}
+              autoplay={{
+                delay: 6000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+                waitForTransition: true,
+              }}
+              navigation
               pagination={{ clickable: true }}
               loop={testimonials.length > 2}
               breakpoints={{
                 640: { slidesPerView: 2 },
                 1024: { slidesPerView: 3 },
               }}
-              style={{ paddingBottom: 50 }}
+              style={{ paddingBottom: 55 }}
             >
               {testimonials.map((t) => (
-                <SwiperSlide key={t.id}>
-                  <Card sx={{ height: "100%" }}>
-                    <CardContent className="flex flex-col gap-2">
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Avatar src={t.avatar}>{t.name.charAt(0)}</Avatar>
+                <SwiperSlide key={t.id} style={{ height: "auto" }}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      position: "relative",
+                      overflow: "visible",
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.light}22 100%)`,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      transition: "transform .25s, box-shadow .25s",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: 4,
+                      },
+                    }}
+                  >
+                    {/* Decorative quote mark */}
+                    <Box
+                      aria-hidden
+                      sx={{
+                        position: "absolute",
+                        top: -12,
+                        left: 16,
+                        fontSize: 88,
+                        lineHeight: 1,
+                        fontFamily: "Georgia, serif",
+                        color: "primary.main",
+                        opacity: 0.18,
+                        userSelect: "none",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      &ldquo;
+                    </Box>
+                    <CardContent sx={{ pt: 4, pb: 3, flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+                      <Rating value={t.rating} readOnly size="small" />
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          flex: 1,
+                          fontStyle: "italic",
+                          color: "text.primary",
+                          lineHeight: 1.6,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 6,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {t.message}
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                        sx={{ pt: 2, borderTop: "1px solid", borderColor: "divider" }}
+                      >
+                        <Avatar
+                          src={t.avatar}
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            border: "2px solid",
+                            borderColor: "primary.main",
+                          }}
+                        >
+                          {t.name.charAt(0)}
+                        </Avatar>
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography variant="subtitle2">{t.name}</Typography>
-                          <Typography variant="caption" className="text-text-secondary">
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {t.name}
+                          </Typography>
+                          <Typography variant="caption" color="primary.main" sx={{ fontWeight: 500 }}>
                             {t.role}
                           </Typography>
                         </Box>
                       </Stack>
-                      <Rating value={t.rating} readOnly size="small" />
-                      <Typography variant="body2" className="text-text-secondary" sx={{ fontStyle: "italic" }}>
-                        &quot;{t.message}&quot;
-                      </Typography>
                     </CardContent>
                   </Card>
                 </SwiperSlide>

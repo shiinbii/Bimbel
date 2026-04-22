@@ -66,12 +66,19 @@ export function useBrochures() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
+      const { data, error } = await supa
         .from("brochures")
         .select("*")
         .order("order", { ascending: true });
       if (cancelled) return;
-      setList(((data as DbRow[]) ?? []).map(toB));
+      if (error) {
+        console.warn("[brochures] select error:", error.message);
+        setList(DEFAULT_BROCHURES);
+        setLoaded(true);
+        return;
+      }
+      const rows = ((data as DbRow[]) ?? []).map(toB);
+      setList(rows.length > 0 ? rows : DEFAULT_BROCHURES);
       setLoaded(true);
     };
     refresh();
@@ -99,7 +106,14 @@ export function useBrochures() {
         id: `br_${Date.now()}`,
         order: prev.length + 1,
       };
-      if (supa) void supa.from("brochures").insert(toDb(full));
+      if (supa) {
+        void supa
+          .from("brochures")
+          .insert(toDb(full))
+          .then(({ error }) => {
+            if (error) console.warn("[brochures] insert error:", error.message);
+          });
+      }
       return [...prev, full];
     });
   }, []);
@@ -113,8 +127,15 @@ export function useBrochures() {
       if (patch.title !== undefined) dbPatch.title = patch.title;
       if (patch.subtitle !== undefined) dbPatch.subtitle = patch.subtitle ?? null;
       if (patch.order !== undefined) dbPatch.order = patch.order;
-      if (Object.keys(dbPatch).length)
-        void supa.from("brochures").update(dbPatch).eq("id", id);
+      if (Object.keys(dbPatch).length) {
+        void supa
+          .from("brochures")
+          .update(dbPatch)
+          .eq("id", id)
+          .then(({ error }) => {
+            if (error) console.warn("[brochures] update error:", error.message);
+          });
+      }
     }
   }, []);
 
@@ -123,7 +144,15 @@ export function useBrochures() {
     setList((prev) =>
       prev.filter((x) => x.id !== id).map((x, i) => ({ ...x, order: i + 1 }))
     );
-    if (supa) void supa.from("brochures").delete().eq("id", id);
+    if (supa) {
+      void supa
+        .from("brochures")
+        .delete()
+        .eq("id", id)
+        .then(({ error }) => {
+          if (error) console.warn("[brochures] delete error:", error.message);
+        });
+    }
   }, []);
 
   const move = useCallback((id: string, dir: -1 | 1) => {

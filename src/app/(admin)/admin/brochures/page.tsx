@@ -200,25 +200,29 @@ function BrochureFormBody({
                     color: "text.secondary",
                     transition: "opacity .15s",
                     "&:hover": { opacity: 0.85 },
+                    "& img": { objectFit: "cover" },
                   }}
                 >
-                  <NiCamera size="large" />
+                  {!values.image && <NiCamera size="large" />}
                 </Avatar>
-                <IconButton
-                  size="small"
-                  color="primary"
-                  onClick={onPickFile}
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    bgcolor: "background.paper",
-                    boxShadow: 1,
-                    "&:hover": { bgcolor: "background.paper" },
-                  }}
-                >
-                  <NiCamera size="small" />
-                </IconButton>
+                {!values.image && (
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={onPickFile}
+                    sx={{
+                      position: "absolute",
+                      bottom: -4,
+                      right: -4,
+                      bgcolor: "background.paper",
+                      boxShadow: 1,
+                      "&:hover": { bgcolor: "background.paper" },
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <NiCamera size="small" />
+                  </IconButton>
+                )}
               </Box>
               <Typography variant="caption" className="text-text-secondary" align="center">
                 Klik untuk upload

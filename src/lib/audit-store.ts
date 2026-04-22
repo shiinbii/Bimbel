@@ -77,20 +77,37 @@ export function useAuditLogs() {
   return { list, loaded, source };
 }
 
-export async function logAudit(entry: {
-  action: string;
-  actor: string;
-  role: Role;
-  target: string;
-  ip?: string;
-}) {
+type Actor = { name: string; email: string; role: Role };
+
+function readActor(): Actor | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const user = JSON.parse(localStorage.getItem("edudoc.current_user") ?? "{}") as {
+      name?: string;
+      email?: string;
+    };
+    const role = (localStorage.getItem("edudoc.role") as Role | null) ?? null;
+    if (!user.email || !role) return null;
+    return { name: user.name ?? user.email, email: user.email, role };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fire-and-forget audit log. Membaca actor dari localStorage (user yg sedang login).
+ * Kalau Supabase belum terkonfigurasi / user belum login → no-op (return void).
+ */
+export function logAudit(entry: { action: string; target: string }) {
   const supa = getSupabase();
   if (!supa) return;
-  await supa.from("audit_logs").insert({
+  const actor = readActor();
+  if (!actor) return;
+  void supa.from("audit_logs").insert({
     action: entry.action,
-    actor: entry.actor,
-    role: entry.role,
+    actor: actor.email,
+    role: actor.role,
     target: entry.target,
-    ip: entry.ip ?? null,
+    ip: null,
   });
 }

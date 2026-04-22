@@ -47,12 +47,19 @@ export function useTestimonials() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
+      const { data, error } = await supa
         .from("testimonials")
         .select("*")
         .order("order", { ascending: true });
       if (cancelled) return;
-      setList(((data as DbRow[]) ?? []).map(toT));
+      if (error) {
+        console.warn("[testimonials] select error:", error.message);
+        setList(mockTestimonials);
+        setLoaded(true);
+        return;
+      }
+      const rows = ((data as DbRow[]) ?? []).map(toT);
+      setList(rows.length > 0 ? rows : mockTestimonials);
       setLoaded(true);
     };
     refresh();
@@ -76,13 +83,28 @@ export function useTestimonials() {
     const full: Testimonial = { ...t, id: `ts_${Date.now()}` };
     setList((prev) => [full, ...prev]);
     const supa = getSupabase();
-    if (supa) void supa.from("testimonials").insert(toDb(full, 0));
+    if (supa) {
+      void supa
+        .from("testimonials")
+        .insert(toDb(full, 0))
+        .then(({ error }) => {
+          if (error) console.warn("[testimonials] insert error:", error.message);
+        });
+    }
   }, []);
 
   const remove = useCallback((id: string) => {
     setList((prev) => prev.filter((t) => t.id !== id));
     const supa = getSupabase();
-    if (supa) void supa.from("testimonials").delete().eq("id", id);
+    if (supa) {
+      void supa
+        .from("testimonials")
+        .delete()
+        .eq("id", id)
+        .then(({ error }) => {
+          if (error) console.warn("[testimonials] delete error:", error.message);
+        });
+    }
   }, []);
 
   const reset = useCallback(() => {

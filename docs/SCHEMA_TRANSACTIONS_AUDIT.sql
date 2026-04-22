@@ -48,6 +48,11 @@ create policy tx_admin_write on public.transactions
     )
   );
 
+-- User yang login boleh insert transaksi untuk dirinya sendiri (flow beli paket poin)
+drop policy if exists tx_self_insert on public.transactions;
+create policy tx_self_insert on public.transactions
+  for insert with check (user_id = auth.uid());
+
 
 -- 2) AUDIT LOGS
 create table if not exists public.audit_logs (

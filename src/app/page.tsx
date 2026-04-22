@@ -296,10 +296,11 @@ export default function LandingPage() {
               }}
               navigation
               pagination={{ clickable: true }}
-              loop={brochures.length > 2}
+              loop={brochures.length >= 2}
+              loopAdditionalSlides={brochures.length}
               breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
+                640: { slidesPerView: Math.min(brochures.length, 2) },
+                1024: { slidesPerView: Math.min(brochures.length, 3) },
               }}
               style={{ paddingBottom: 50 }}
             >
@@ -503,10 +504,11 @@ export default function LandingPage() {
               }}
               navigation
               pagination={{ clickable: true }}
-              loop={testimonials.length > 2}
+              loop={testimonials.length >= 2}
+              loopAdditionalSlides={testimonials.length}
               breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
+                640: { slidesPerView: Math.min(testimonials.length, 2) },
+                1024: { slidesPerView: Math.min(testimonials.length, 3) },
               }}
               style={{ paddingBottom: 55 }}
             >

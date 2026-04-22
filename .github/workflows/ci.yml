@@ -21,13 +21,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: "yarn"
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: TypeScript typecheck
-        run: npx tsc --noEmit
+        run: yarn tsc --noEmit
 
       - name: Lint (non-blocking)
-        run: npx next lint --dir src || echo "lint finished"
+        run: yarn next lint --dir src || echo "lint finished"

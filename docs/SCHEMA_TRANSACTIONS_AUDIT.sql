@@ -89,8 +89,18 @@ create policy audit_admin_write on public.audit_logs
 
 
 -- 3) Optional: realtime publication supaya UI auto-refresh
-alter publication supabase_realtime add table public.transactions;
-alter publication supabase_realtime add table public.audit_logs;
+-- Wrap di DO block supaya idempotent (no-op kalau table sudah terdaftar).
+do $$
+begin
+  alter publication supabase_realtime add table public.transactions;
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.audit_logs;
+exception when duplicate_object then null;
+end $$;
 
 
 -- ============================================================

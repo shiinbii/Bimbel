@@ -286,12 +286,12 @@ export default function LandingPage() {
             <Swiper
               modules={[Autoplay, Navigation, Pagination]}
               spaceBetween={20}
-              slidesPerView={1}
-              speed={500}
+              slidesPerView={1.1}
+              speed={600}
+              watchOverflow={false}
               autoplay={{
-                delay: 4000,
+                delay: 3500,
                 disableOnInteraction: false,
-                pauseOnMouseEnter: true,
                 waitForTransition: true,
               }}
               navigation
@@ -299,8 +299,8 @@ export default function LandingPage() {
               loop={brochures.length >= 2}
               loopAdditionalSlides={brochures.length}
               breakpoints={{
-                640: { slidesPerView: Math.min(brochures.length, 2) },
-                1024: { slidesPerView: Math.min(brochures.length, 3) },
+                640: { slidesPerView: brochures.length >= 3 ? 2.2 : Math.min(brochures.length, 1.5) },
+                1024: { slidesPerView: brochures.length >= 4 ? 3.2 : Math.min(brochures.length, 2.5) },
               }}
               style={{ paddingBottom: 50 }}
             >
@@ -494,12 +494,12 @@ export default function LandingPage() {
             <Swiper
               modules={[Autoplay, Navigation, Pagination]}
               spaceBetween={24}
-              slidesPerView={1}
-              speed={500}
+              slidesPerView={1.1}
+              speed={600}
+              watchOverflow={false}
               autoplay={{
-                delay: 6000,
+                delay: 5000,
                 disableOnInteraction: false,
-                pauseOnMouseEnter: true,
                 waitForTransition: true,
               }}
               navigation
@@ -507,8 +507,8 @@ export default function LandingPage() {
               loop={testimonials.length >= 2}
               loopAdditionalSlides={testimonials.length}
               breakpoints={{
-                640: { slidesPerView: Math.min(testimonials.length, 2) },
-                1024: { slidesPerView: Math.min(testimonials.length, 3) },
+                640: { slidesPerView: testimonials.length >= 3 ? 2.2 : Math.min(testimonials.length, 1.5) },
+                1024: { slidesPerView: testimonials.length >= 4 ? 3.2 : Math.min(testimonials.length, 2.5) },
               }}
               style={{ paddingBottom: 55 }}
             >

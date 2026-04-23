@@ -80,15 +80,16 @@ export function useTransactions() {
         .order("created_at", { ascending: false })
         .limit(1000);
       if (cancelled) return;
-      if (error || !data) {
-        setList(mockTransactions);
-        setSource("mock");
+      if (error) {
+        console.warn("[transactions] select error:", error.message);
+        setList([]);
+        setSource("db");
         setLoaded(true);
         return;
       }
-      const rows = (data as DbRow[]).map(toTx);
-      setList(rows.length > 0 ? rows : mockTransactions);
-      setSource(rows.length > 0 ? "db" : "mock");
+      const rows = ((data as DbRow[]) ?? []).map(toTx);
+      setList(rows);
+      setSource("db");
       setLoaded(true);
     };
     refresh();

@@ -46,15 +46,16 @@ export function useAuditLogs() {
         .order("created_at", { ascending: false })
         .limit(500);
       if (cancelled) return;
-      if (error || !data) {
-        setList(mockAuditLogs);
-        setSource("mock");
+      if (error) {
+        console.warn("[audit_logs] select error:", error.message);
+        setList([]);
+        setSource("db");
         setLoaded(true);
         return;
       }
-      const rows = (data as DbRow[]).map(toLog);
-      setList(rows.length > 0 ? rows : mockAuditLogs);
-      setSource(rows.length > 0 ? "db" : "mock");
+      const rows = ((data as DbRow[]) ?? []).map(toLog);
+      setList(rows);
+      setSource("db");
       setLoaded(true);
     };
     refresh();

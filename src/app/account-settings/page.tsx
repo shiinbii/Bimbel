@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Avatar,
@@ -44,6 +44,53 @@ const DEFAULT_PREFS = {
   timezone: "Asia/Jakarta",
 };
 
+async function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function resizeImage(dataUrl: string, maxSize = 256): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("Canvas tidak tersedia"));
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => reject(new Error("Gagal memuat gambar"));
+    img.src = dataUrl;
+  });
+}
+
+function detectCurrentDevice(): string {
+  if (typeof navigator === "undefined") return "Perangkat ini";
+  const ua = navigator.userAgent;
+  let browser = "Browser";
+  if (/Edg\//.test(ua)) browser = "Edge";
+  else if (/OPR\/|Opera/.test(ua)) browser = "Opera";
+  else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua)) browser = "Firefox";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+  let os = "OS";
+  if (/Windows/.test(ua)) os = "Windows";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/iPhone|iPad|iPod/.test(ua)) os = "iOS";
+  else if (/Mac OS X/.test(ua)) os = "macOS";
+  else if (/Linux/.test(ua)) os = "Linux";
+  return `${browser} · ${os}`;
+}
+
 export default function AccountSettingsPage() {
   const { user, setUser, loaded } = useCurrentUser();
   const { enqueueSnackbar } = useSnackbar();
@@ -64,6 +111,42 @@ export default function AccountSettingsPage() {
   const [pwSaving, setPwSaving] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [currentDevice, setCurrentDevice] = useState<string>("Perangkat ini");
+  const avatarFileRef = useRef<HTMLInputElement | null>(null);
+
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [avatarDraft, setAvatarDraft] = useState<string | undefined>(undefined);
+
+  const openAvatarDialog = () => {
+    setAvatarDraft(avatar);
+    setAvatarDialogOpen(true);
+  };
+
+  const handleAvatarImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      enqueueSnackbar("Ukuran file maks 5MB", { variant: "error" });
+      return;
+    }
+    try {
+      const raw = await readFileAsDataURL(file);
+      const resized = await resizeImage(raw, 256);
+      setAvatarDraft(resized);
+    } catch {
+      enqueueSnackbar("Gagal memproses gambar", { variant: "error" });
+    }
+  };
+
+  const saveAvatarDialog = () => {
+    setAvatar(avatarDraft);
+    setAvatarDialogOpen(false);
+  };
+
+  useEffect(() => {
+    setCurrentDevice(detectCurrentDevice());
+  }, []);
 
   useEffect(() => {
     if (loaded) {
@@ -138,18 +221,7 @@ export default function AccountSettingsPage() {
               <Card>
                 <CardContent className="flex flex-col gap-2.5">
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: "primary.light",
-                        color: "primary.main",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ color: "primary.main", display: "inline-flex" }}>
                       <NiUser size="small" />
                     </Box>
                     <Box>
@@ -164,17 +236,19 @@ export default function AccountSettingsPage() {
                     <Avatar src={avatar} sx={{ width: 64, height: 64 }}>
                       {(name || "U").charAt(0).toUpperCase()}
                     </Avatar>
-                    <Box>
-                      <Typography variant="body2" className="text-text-secondary-dark">
-                        URL Foto Profil
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" className="text-text-secondary-dark" sx={{ mb: 1 }}>
+                        Foto Profil
                       </Typography>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        placeholder="https://…"
-                        value={avatar ?? ""}
-                        onChange={(e) => setAvatar(e.target.value || undefined)}
-                        sx={{ mt: 0.5 }}
+                      <Button size="small" variant="surface" color="grey" onClick={openAvatarDialog}>
+                        Ganti Foto Profil
+                      </Button>
+                      <input
+                        ref={avatarFileRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        hidden
+                        onChange={handleAvatarImport}
                       />
                     </Box>
                   </Stack>
@@ -198,12 +272,7 @@ export default function AccountSettingsPage() {
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        label="Nomor HP"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
+                      <TextField fullWidth label="Nomor HP" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </Grid>
                   </Grid>
 
@@ -220,12 +289,7 @@ export default function AccountSettingsPage() {
                     >
                       Batal
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={saveProfile}
-                      disabled={profileSaving}
-                    >
+                    <Button variant="contained" color="primary" onClick={saveProfile} disabled={profileSaving}>
                       {profileSaving ? "Menyimpan..." : "Simpan Profil"}
                     </Button>
                   </Stack>
@@ -241,18 +305,7 @@ export default function AccountSettingsPage() {
               <Card>
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: "primary.light",
-                        color: "primary.main",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ color: "primary.main", display: "inline-flex" }}>
                       <NiBell size="small" />
                     </Box>
                     <Typography variant="caption" className="text-text-secondary">
@@ -299,18 +352,7 @@ export default function AccountSettingsPage() {
               <Card>
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: "warning.light",
-                        color: "warning.main",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ color: "warning.main", display: "inline-flex" }}>
                       <NiShield size="small" />
                     </Box>
                     <Typography variant="caption" className="text-text-secondary">
@@ -333,21 +375,9 @@ export default function AccountSettingsPage() {
                       borderRadius: 1.5,
                       border: "1px solid",
                       borderColor: "divider",
-                      bgcolor: "background.default",
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: "action.hover",
-                        color: "text.secondary",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ color: "text.secondary", display: "inline-flex" }}>
                       <NiLock size="small" />
                     </Box>
                     <Box sx={{ flex: 1 }}>
@@ -372,18 +402,7 @@ export default function AccountSettingsPage() {
               <Card>
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: "success.light",
-                        color: "success.main",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ color: "success.main", display: "inline-flex" }}>
                       <NiWorld size="small" />
                     </Box>
                     <Typography variant="caption" className="text-text-secondary">
@@ -443,12 +462,7 @@ export default function AccountSettingsPage() {
                   <Typography variant="caption" className="text-text-secondary">
                     Perangkat yang sedang login.
                   </Typography>
-                  <DeviceRow label="Chrome · Windows" ip="103.80.44.12" isCurrent />
-                  <DeviceRow label="Safari · iOS" ip="103.80.44.24" />
-                  <DeviceRow label="Firefox · Mac" ip="172.18.22.4" />
-                  <Button variant="surface" color="grey" fullWidth sx={{ mt: 1 }}>
-                    Keluarkan Semua Sesi Lain
-                  </Button>
+                  <DeviceRow label={currentDevice} isCurrent />
                 </CardContent>
               </Card>
             </Box>
@@ -477,13 +491,41 @@ export default function AccountSettingsPage() {
         </Grid>
       </Grid>
 
+      {/* Avatar dialog */}
+      <Dialog open={avatarDialogOpen} onClose={() => setAvatarDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Ganti Foto Profil</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} alignItems="center" sx={{ py: 1 }}>
+            <Avatar src={avatarDraft} sx={{ width: 128, height: 128 }}>
+              {(name || "U").charAt(0).toUpperCase()}
+            </Avatar>
+            <Stack direction="row" spacing={1}>
+              <Button variant="surface" color="grey" onClick={() => avatarFileRef.current?.click()}>
+                Pilih dari Perangkat
+              </Button>
+              {avatarDraft && (
+                <Button variant="text" color="error" onClick={() => setAvatarDraft(undefined)}>
+                  Hapus Foto
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="paper" color="grey" onClick={() => setAvatarDialogOpen(false)}>
+            Batal
+          </Button>
+          <Button variant="contained" color="primary" onClick={saveAvatarDialog}>
+            Simpan
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Password dialog */}
       <Dialog open={pwOpen} onClose={() => setPwOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Ganti Password</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Masukkan password lama dan password baru yang kuat.
-          </DialogContentText>
+          <DialogContentText sx={{ mb: 2 }}>Masukkan password lama dan password baru yang kuat.</DialogContentText>
           <Stack spacing={2}>
             <TextField
               label="Password Lama"
@@ -563,21 +605,14 @@ function ToggleRow({
         borderRadius: 1.5,
         border: "1px solid",
         borderColor: active ? "primary.main" : "divider",
-        bgcolor: active ? "primary.light" : "background.default",
         cursor: "pointer",
         transition: "all 0.15s",
       }}
     >
       <Box
         sx={{
-          width: 36,
-          height: 36,
-          borderRadius: 1.5,
-          bgcolor: active ? "primary.main" : "action.hover",
-          color: active ? "primary.contrastText" : "text.secondary",
+          color: active ? "primary.main" : "text.secondary",
           display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         {icon}
@@ -593,7 +628,7 @@ function ToggleRow({
   );
 }
 
-function DeviceRow({ label, ip, isCurrent }: { label: string; ip: string; isCurrent?: boolean }) {
+function DeviceRow({ label, ip, isCurrent }: { label: string; ip?: string; isCurrent?: boolean }) {
   return (
     <Stack
       direction="row"
@@ -610,9 +645,11 @@ function DeviceRow({ label, ip, isCurrent }: { label: string; ip: string; isCurr
     >
       <Box>
         <Typography variant="body2">{label}</Typography>
-        <Typography variant="caption" className="text-text-secondary" sx={{ fontFamily: "monospace" }}>
-          {ip}
-        </Typography>
+        {ip && (
+          <Typography variant="caption" className="text-text-secondary" sx={{ fontFamily: "monospace" }}>
+            {ip}
+          </Typography>
+        )}
       </Box>
       {isCurrent ? (
         <Chip size="small" color="success" icon={<NiCheck size="small" />} label="Perangkat ini" />

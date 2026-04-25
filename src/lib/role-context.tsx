@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Role } from "./types";
 import { getSupabase } from "./supabase";
+import type { Role } from "./types";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
 interface RoleCtx {
   role: Role;
@@ -44,11 +37,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       const { data: s } = await supa.auth.getSession();
       const uid = s.session?.user.id;
       if (!uid) return; // tidak ada session → jangan override role lokal
-      const { data } = await supa
-        .from("profiles")
-        .select("role")
-        .eq("id", uid)
-        .maybeSingle();
+      const { data } = await supa.from("profiles").select("role").eq("id", uid).maybeSingle();
       if (cancelled || !data) return;
       const serverRole = (data as { role: Role }).role;
       if (serverRole) {

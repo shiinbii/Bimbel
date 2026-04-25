@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.payment_settings";
 const SETTINGS_ID = "default";
@@ -161,11 +161,7 @@ export function usePaymentSettings() {
 
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("payment_settings")
-        .select("*")
-        .eq("id", SETTINGS_ID)
-        .maybeSingle();
+      const { data } = await supa.from("payment_settings").select("*").eq("id", SETTINGS_ID).maybeSingle();
       if (cancelled) return;
       setSettings(data ? fromDb(data as DbRow) : DEFAULT_PAYMENT_SETTINGS);
       setLoaded(true);
@@ -174,11 +170,7 @@ export function usePaymentSettings() {
 
     const ch = supa
       .channel(`ps_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "payment_settings" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "payment_settings" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -194,19 +186,16 @@ export function usePaymentSettings() {
     else writeLS(next);
   };
 
-  const setMethod = useCallback(
-    (id: PaymentMethodId, patch: Partial<PaymentMethodConfig>) => {
-      setSettings((prev) => {
-        const next = {
-          ...prev,
-          methods: { ...prev.methods, [id]: { ...prev.methods[id], ...patch } },
-        };
-        persist(next);
-        return next;
-      });
-    },
-    []
-  );
+  const setMethod = useCallback((id: PaymentMethodId, patch: Partial<PaymentMethodConfig>) => {
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        methods: { ...prev.methods, [id]: { ...prev.methods[id], ...patch } },
+      };
+      persist(next);
+      return next;
+    });
+  }, []);
 
   const update = useCallback((patch: Partial<PaymentSettings>) => {
     setSettings((prev) => {

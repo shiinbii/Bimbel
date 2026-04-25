@@ -54,3 +54,6 @@ next-env.d.ts
 .claude.local.json
 CLAUDE.md
 .mcp.json
+
+# Internal docs (schema SQL, ERD, project summary) — keep local only
+docs/

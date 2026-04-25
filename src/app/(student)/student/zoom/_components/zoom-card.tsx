@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 
 import { Avatar, Box, Button, Card, CardContent, Chip, Typography } from "@mui/material";
 
@@ -50,7 +50,7 @@ export default function ZoomCard({ session: z, registered, onRegister }: Props) 
   return (
     <Card className="flex h-full flex-col">
       <CardContent className="flex h-full flex-col gap-2.5">
-        <Box className="flex items-center justify-between gap-2 flex-wrap">
+        <Box className="flex flex-wrap items-center justify-between gap-2">
           {z.status === "LIVE" ? (
             <Chip size="small" label="LIVE" color="error" />
           ) : z.status === "ENDED" ? (
@@ -68,10 +68,8 @@ export default function ZoomCard({ session: z, registered, onRegister }: Props) 
           {z.description}
         </Typography>
 
-        <Box className="flex items-center gap-2 mt-1">
-          <Avatar sx={{ width: 36, height: 36, borderRadius: 1.5 }}>
-            {z.teacher.charAt(0)}
-          </Avatar>
+        <Box className="mt-1 flex items-center gap-2">
+          <Avatar sx={{ width: 36, height: 36, borderRadius: 1.5 }}>{z.teacher.charAt(0)}</Avatar>
           <Box>
             <Typography variant="subtitle2">{z.teacher}</Typography>
             <Typography variant="caption" className="text-text-secondary-light">
@@ -80,7 +78,7 @@ export default function ZoomCard({ session: z, registered, onRegister }: Props) 
           </Box>
         </Box>
 
-        <Box className="grid grid-cols-3 gap-1.5 mt-1">
+        <Box className="mt-1 grid grid-cols-3 gap-1.5">
           <TinyStat icon={<NiCalendar size="small" />} value={formatDate(z.scheduledAt).split(",")[0]} />
           <TinyStat icon={<NiClock size="small" />} value={`${z.duration} mnt`} />
           <TinyStat icon={<NiUsers size="small" />} value={`${z.currentParticipants}/${z.maxParticipants}`} />
@@ -100,7 +98,7 @@ export default function ZoomCard({ session: z, registered, onRegister }: Props) 
           className="flex items-center justify-between pt-2.5"
           sx={{ borderTop: "1px solid", borderColor: "divider" }}
         >
-          <Box className="flex items-center gap-1 text-warning">
+          <Box className="text-warning flex items-center gap-1">
             <NiCoin size="small" />
             <Typography variant="body2" className="font-semibold">
               {z.cost} pts
@@ -111,23 +109,11 @@ export default function ZoomCard({ session: z, registered, onRegister }: Props) 
               Selesai
             </Button>
           ) : registered ? (
-            <Button
-              component={Link}
-              href={`/student/zoom/${z.id}`}
-              size="tiny"
-              variant="pastel"
-              color="primary"
-            >
+            <Button component={Link} href={`/student/zoom/${z.id}`} size="tiny" variant="pastel" color="primary">
               {z.status === "LIVE" ? "Masuk Sesi" : "Ruang Tunggu"}
             </Button>
           ) : (
-            <Button
-              size="tiny"
-              variant="contained"
-              color="primary"
-              onClick={handleRegister}
-              disabled={loading}
-            >
+            <Button size="tiny" variant="contained" color="primary" onClick={handleRegister} disabled={loading}>
               {loading ? "Memproses..." : z.status === "LIVE" ? "Gabung" : "Daftar"}
             </Button>
           )}

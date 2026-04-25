@@ -42,8 +42,7 @@ export default function FirstLoginModal({ open, onContinue, userName }: Props) {
           sx={{
             width: 40,
             height: 40,
-            background:
-              "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent-3)) 100%)",
+            background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent-3)) 100%)",
             color: "hsl(var(--text-contrast))",
           }}
         >
@@ -67,39 +66,28 @@ export default function FirstLoginModal({ open, onContinue, userName }: Props) {
             Kebijakan Aktivitas Akun
           </Typography>
           <Typography variant="body2">
-            Demi keamanan data, akun <strong>siswa</strong> dan <strong>guru</strong> akan
-            dinonaktifkan otomatis jika tidak login selama{" "}
-            <strong>3 bulan berturut-turut</strong>.
+            Demi keamanan data, akun <strong>siswa</strong> dan <strong>guru</strong> akan dinonaktifkan otomatis jika
+            tidak login selama <strong>3 bulan berturut-turut</strong>.
           </Typography>
           <Typography variant="caption" component="p" className="mt-2">
-            Akun tidak hilang — kamu bisa menghubungi admin untuk mengaktifkan kembali.
-            Data belajar, saldo poin, dan riwayat quiz tetap aman.
+            Akun tidak hilang — kamu bisa menghubungi admin untuk mengaktifkan kembali. Data belajar, saldo poin, dan
+            riwayat quiz tetap aman.
           </Typography>
         </Alert>
 
         <FormControlLabel
-          control={
-            <Checkbox
-              checked={ack}
-              onChange={(e) => setAck(e.target.checked)}
-            />
-          }
+          control={<Checkbox checked={ack} onChange={(e) => setAck(e.target.checked)} />}
           label={
             <Typography variant="body2">
-              Saya mengerti bahwa akun saya akan dinonaktifkan otomatis jika tidak login
-              selama 3 bulan, dan setuju dengan kebijakan keamanan akun EduDoc.
+              Saya mengerti bahwa akun saya akan dinonaktifkan otomatis jika tidak login selama 3 bulan, dan setuju
+              dengan kebijakan keamanan akun EduDoc.
             </Typography>
           }
         />
       </DialogContent>
 
       <DialogActions>
-        <Button
-          variant="contained"
-          onClick={onContinue}
-          disabled={!ack}
-          fullWidth
-        >
+        <Button variant="contained" onClick={onContinue} disabled={!ack} fullWidth>
           Saya Mengerti, Lanjutkan
         </Button>
       </DialogActions>

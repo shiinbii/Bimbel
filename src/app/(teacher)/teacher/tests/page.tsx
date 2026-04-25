@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 
 import {
   Alert,
-  Box,
   Card,
   CardContent,
   Chip,
@@ -39,11 +38,7 @@ export default function TeacherTestsPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return mockTests;
-    return mockTests.filter(
-      (t) =>
-        t.title.toLowerCase().includes(q) ||
-        t.subject.toLowerCase().includes(q),
-    );
+    return mockTests.filter((t) => t.title.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q));
   }, [search]);
 
   return (
@@ -58,19 +53,14 @@ export default function TeacherTestsPage() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row items-start gap-2">
-          <Chip
-            icon={<NiLock size="small" />}
-            label="Admin-managed"
-            color="warning"
-            variant="outlined"
-          />
+          <Chip icon={<NiLock size="small" />} label="Admin-managed" color="warning" variant="outlined" />
         </Grid>
       </Grid>
 
       <Grid size={12}>
         <Alert severity="info" variant="outlined">
-          Bank soal dikelola pusat oleh admin untuk menjaga kualitas & konsistensi. Jika kamu
-          butuh soal baru, hubungi admin untuk import/penambahan.
+          Bank soal dikelola pusat oleh admin untuk menjaga kualitas & konsistensi. Jika kamu butuh soal baru, hubungi
+          admin untuk import/penambahan.
         </Alert>
       </Grid>
 

@@ -17,7 +17,12 @@ export default function TeacherDashboardPage() {
     { icon: <NiUsers size="medium" />, label: "Total Siswa", value: "468", trend: "+24 minggu ini" },
     { icon: <NiCamera size="medium" />, label: "Total Sesi", value: "120", trend: "15 live" },
     { icon: <NiStar size="medium" />, label: "Rating Guru", value: "4.9", trend: "1.204 review" },
-    { icon: <NiDocumentCheck size="medium" />, label: "Soal Dibuat", value: String(mockTests.length), trend: "+3 draft" },
+    {
+      icon: <NiDocumentCheck size="medium" />,
+      label: "Soal Dibuat",
+      value: String(mockTests.length),
+      trend: "+3 draft",
+    },
   ];
 
   return (
@@ -49,7 +54,7 @@ export default function TeacherDashboardPage() {
                       </Typography>
                       <Box className="text-primary">{s.icon}</Box>
                     </Box>
-                    <Box className="flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0 mt-1">
+                    <Box className="mt-1 flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0">
                       <Typography variant="h5" className="text-text-primary">
                         {s.value}
                       </Typography>

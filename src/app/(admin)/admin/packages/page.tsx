@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -27,7 +26,7 @@ import {
 import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiPlus from "@/icons/nexture/ni-plus";
-import { useCreditPackages, type CreditPackage } from "@/lib/credit-packages-store";
+import { type CreditPackage, useCreditPackages } from "@/lib/credit-packages-store";
 import { formatIDR } from "@/lib/format";
 
 const PackageSchema = Yup.object().shape({
@@ -88,7 +87,14 @@ export default function AdminPackagesPage() {
         ) : (
           list.map((pkg) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pkg.id}>
-              <Card sx={{ height: "100%", borderColor: pkg.popular ? "primary.main" : "divider", borderWidth: pkg.popular ? 2 : 1 }} variant={pkg.popular ? "elevation" : "outlined"}>
+              <Card
+                sx={{
+                  height: "100%",
+                  borderColor: pkg.popular ? "primary.main" : "divider",
+                  borderWidth: pkg.popular ? 2 : 1,
+                }}
+                variant={pkg.popular ? "elevation" : "outlined"}
+              >
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography variant="h6">Paket {pkg.points} pts</Typography>
@@ -103,7 +109,11 @@ export default function AdminPackagesPage() {
                       <Chip size="small" label={`+${pkg.bonus} bonus`} color="warning" variant="outlined" />
                     ) : null}
                   </Stack>
-                  <Stack direction="row" spacing={1} sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                  >
                     <Button
                       variant="surface"
                       color="grey"
@@ -136,9 +146,7 @@ export default function AdminPackagesPage() {
               enableReinitialize
               onSubmit={(values, { setSubmitting }) => {
                 const existing = editing.id ? list.find((p) => p.id === editing.id) : undefined;
-                const nextOrder =
-                  existing?.order ??
-                  (list.length ? Math.max(...list.map((p) => p.order)) + 1 : 1);
+                const nextOrder = existing?.order ?? (list.length ? Math.max(...list.map((p) => p.order)) + 1 : 1);
                 const pkg: CreditPackage = {
                   id: editing.id ?? `pkg_${Date.now()}`,
                   price: Number(values.price),
@@ -209,12 +217,7 @@ export default function AdminPackagesPage() {
                     <Button variant="paper" color="grey" onClick={() => setEditing(null)}>
                       Batal
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
+                    <Button variant="contained" color="primary" onClick={submitForm} disabled={isSubmitting}>
                       {isSubmitting ? "Menyimpan..." : "Simpan"}
                     </Button>
                   </DialogActions>

@@ -1,5 +1,6 @@
 "use client";
 
+import QuizCard from "./_components/quiz-card";
 import { useMemo, useState } from "react";
 
 import {
@@ -18,8 +19,6 @@ import NiBook from "@/icons/nexture/ni-book";
 import NiSearch from "@/icons/nexture/ni-search";
 import { mockTests, subjectList } from "@/lib/mock-data";
 import type { TestType } from "@/lib/types";
-
-import QuizCard from "./_components/quiz-card";
 
 type TypeFilter = "ALL" | TestType;
 
@@ -40,8 +39,7 @@ export default function QuizListPage() {
     return mockTests.filter((t) => {
       const matchSubject = subject === "Semua" || t.subject === subject;
       const matchType = type === "ALL" || t.type === type;
-      const matchSearch =
-        !q || t.title.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q);
+      const matchSearch = !q || t.title.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q);
       return matchSubject && matchType && matchSearch;
     });
   }, [subject, type, search]);
@@ -54,8 +52,8 @@ export default function QuizListPage() {
             Soal & Quiz
           </Typography>
           <Typography variant="body2" className="text-text-secondary">
-            Pilih tipe soal sesuai kebutuhan — pre-test untuk pemetaan, video quiz untuk materi
-            baru, atau ujian untuk simulasi tes.
+            Pilih tipe soal sesuai kebutuhan — pre-test untuk pemetaan, video quiz untuk materi baru, atau ujian untuk
+            simulasi tes.
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row items-start gap-2">
@@ -69,12 +67,7 @@ export default function QuizListPage() {
       </Grid>
 
       <Grid size={12}>
-        <Tabs
-          value={type}
-          onChange={(_, v) => setType(v as TypeFilter)}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
+        <Tabs value={type} onChange={(_, v) => setType(v as TypeFilter)} variant="scrollable" scrollButtons="auto">
           {TYPE_TABS.map((t) => (
             <Tab key={t.key} value={t.key} label={t.label} />
           ))}

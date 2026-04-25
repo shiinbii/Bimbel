@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Chip, Grid, Stack, Typography } from "@mui/material";
 
-import NiCamera from "@/icons/nexture/ni-camera";
 import NiClock from "@/icons/nexture/ni-clock";
 import NiLock from "@/icons/nexture/ni-lock";
 import NiPlay from "@/icons/nexture/ni-play";
@@ -35,19 +24,13 @@ export default function TeacherSessionsPage() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row items-start gap-2">
-          <Chip
-            icon={<NiLock size="small" />}
-            label="Admin-managed"
-            color="warning"
-            variant="outlined"
-          />
+          <Chip icon={<NiLock size="small" />} label="Admin-managed" color="warning" variant="outlined" />
         </Grid>
       </Grid>
 
       <Grid size={12}>
         <Alert severity="info" variant="outlined">
-          Hanya admin yang dapat menambah sesi Zoom. Sebagai guru kamu hanya menjalankan sesi
-          yang sudah dijadwalkan.
+          Hanya admin yang dapat menambah sesi Zoom. Sebagai guru kamu hanya menjalankan sesi yang sudah dijadwalkan.
         </Alert>
       </Grid>
 
@@ -85,12 +68,7 @@ export default function TeacherSessionsPage() {
 
                   <Box className="flex-1" />
 
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mt: 1 }}
-                  >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
                     <Stack direction="row" spacing={0.5} alignItems="center" className="text-text-secondary">
                       <NiUsers size="small" />
                       <Typography variant="caption">

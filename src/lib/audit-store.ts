@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { mockAuditLogs } from "./mock-data";
 import { getSupabase } from "./supabase";
 import type { AuditLog, Role } from "./types";
+import { useEffect, useState } from "react";
 
 type DbRow = {
   id: string;
@@ -62,11 +62,7 @@ export function useAuditLogs() {
 
     const ch = supa
       .channel(`aud_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "audit_logs" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "audit_logs" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -103,12 +99,25 @@ export function logAudit(entry: { action: string; target: string }) {
   const supa = getSupabase();
   if (!supa) return;
   const actor = readActor();
-  if (!actor) return;
-  void supa.from("audit_logs").insert({
-    action: entry.action,
-    actor: actor.email,
-    role: actor.role,
-    target: entry.target,
-    ip: null,
-  });
+  if (!actor) {
+    console.warn("[audit_logs] skip insert — no actor in localStorage", entry);
+    return;
+  }
+  void supa
+    .from("audit_logs")
+    .insert({
+      action: entry.action,
+      actor: actor.email,
+      role: actor.role,
+      target: entry.target,
+      ip: null,
+    })
+    .then(({ error }) => {
+      if (error) {
+        // Common cause: RLS policy `audit_authed_insert` requires
+        // actor === auth.jwt() ->> 'email'. Email mismatch (case, custom
+        // claim, stale localStorage) → 42501 / RLS violation.
+        console.warn("[audit_logs] insert failed:", error.message, "actor:", actor.email, "action:", entry.action);
+      }
+    });
 }

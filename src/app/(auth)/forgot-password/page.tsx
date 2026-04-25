@@ -24,13 +24,10 @@ import EduDocLogo from "@/components/auth/EduDocLogo";
 import NiArrowRight from "@/icons/nexture/ni-arrow-right";
 import NiCrossSquare from "@/icons/nexture/ni-cross-square";
 import NiEmail from "@/icons/nexture/ni-email";
-import { SUPABASE_CONFIGURED, getSupabase } from "@/lib/supabase";
+import { getSupabase, SUPABASE_CONFIGURED } from "@/lib/supabase";
 
 const schema = yup.object({
-  email: yup
-    .string()
-    .required("Email wajib diisi")
-    .email("Format email tidak valid"),
+  email: yup.string().required("Email wajib diisi").email("Format email tidak valid"),
 });
 
 export default function ForgotPasswordPage() {
@@ -74,7 +71,7 @@ export default function ForgotPasswordPage() {
     <Box className="flex min-h-screen w-full items-center justify-center p-4">
       <Paper
         elevation={3}
-        className="bg-foreground outline-line max-w-full w-md rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
+        className="bg-foreground outline-line w-md max-w-full rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
       >
         <Box className="flex flex-col gap-6 px-8 sm:px-14">
           <Box className="flex justify-center">
@@ -91,17 +88,11 @@ export default function ForgotPasswordPage() {
           </Box>
 
           {!sentTo ? (
-            <Box
-              component="form"
-              onSubmit={formik.handleSubmit}
-              className="flex flex-col gap-4"
-            >
+            <Box component="form" onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
               <FormControl className="outlined" variant="standard" size="small">
                 <FormLabel component="label" className="flex flex-row">
                   Email
-                  {formik.touched.email && formik.errors.email && (
-                    <InputErrorTooltip title={formik.errors.email} />
-                  )}
+                  {formik.touched.email && formik.errors.email && <InputErrorTooltip title={formik.errors.email} />}
                 </FormLabel>
                 <Input
                   id="email"
@@ -124,21 +115,12 @@ export default function ForgotPasswordPage() {
                 variant="contained"
                 fullWidth
                 disabled={formik.isSubmitting}
-                endIcon={
-                  formik.isSubmitting ? (
-                    <CircularProgress size={16} />
-                  ) : (
-                    <NiArrowRight size="medium" />
-                  )
-                }
+                endIcon={formik.isSubmitting ? <CircularProgress size={16} /> : <NiArrowRight size="medium" />}
               >
                 {formik.isSubmitting ? "Mengirim..." : "Kirim Tautan Reset"}
               </Button>
 
-              <Typography
-                variant="caption"
-                className="text-text-secondary text-center"
-              >
+              <Typography variant="caption" className="text-text-secondary text-center">
                 Jika akun terdaftar, kamu akan menerima tautan reset dalam 1–2 menit.
               </Typography>
             </Box>
@@ -146,18 +128,15 @@ export default function ForgotPasswordPage() {
             <Alert severity="success">
               <Typography variant="subtitle2">Tautan Terkirim</Typography>
               <Typography variant="body2">
-                Tautan reset password telah dikirim ke <strong>{sentTo}</strong>.
-                Cek inbox (atau folder spam) dan buka link untuk mengganti password.
+                Tautan reset password telah dikirim ke <strong>{sentTo}</strong>. Cek inbox (atau folder spam) dan buka
+                link untuk mengganti password.
               </Typography>
             </Alert>
           )}
 
           <Typography variant="body2" className="text-text-secondary text-center">
             Ingat password-mu?{" "}
-            <Link
-              href="/login"
-              className="link-primary link-underline-hover font-semibold"
-            >
+            <Link href="/login" className="link-primary link-underline-hover font-semibold">
               Masuk sekarang
             </Link>
           </Typography>

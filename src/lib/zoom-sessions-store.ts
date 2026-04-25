@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { mockZoomSessions } from "./mock-data";
-import type { ZoomSession, ZoomStatus } from "./types";
 import { getSupabase } from "./supabase";
+import type { ZoomSession, ZoomStatus } from "./types";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.zoom_sessions";
 
@@ -87,10 +87,7 @@ export function useZoomSessions() {
 
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("zoom_sessions")
-        .select("*")
-        .order("scheduled_at", { ascending: true });
+      const { data } = await supa.from("zoom_sessions").select("*").order("scheduled_at", { ascending: true });
       if (cancelled) return;
       setList(((data as DbRow[]) ?? []).map(toZoom));
       setLoaded(true);
@@ -99,11 +96,7 @@ export function useZoomSessions() {
 
     const ch = supa
       .channel(`zoom_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "zoom_sessions" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "zoom_sessions" }, () => refresh())
       .subscribe();
 
     return () => {

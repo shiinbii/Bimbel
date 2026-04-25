@@ -1,11 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { mockTeachers } from "./mock-data";
 import type { Teacher } from "./types";
-
-const KEY = "edudoc.teacher_profiles";
+import { useCallback, useEffect, useState } from "react";
 
 export interface TeacherStats {
   penjelasan: number;
@@ -37,27 +35,52 @@ const seed: Record<string, Partial<TeacherStats> & { description: string }> = {
   t1: {
     description:
       "Alumni ITB Matematika, 8 tahun pengalaman mengajar UTBK. Spesialisasi aljabar, geometri analitik, dan trigonometri tingkat lanjut.",
-    penjelasan: 9.2, interaktif: 8.5, penguasaan: 9.5, ketepatan: 9.0, motivasi: 8.8, kesabaran: 9.0,
+    penjelasan: 9.2,
+    interaktif: 8.5,
+    penguasaan: 9.5,
+    ketepatan: 9.0,
+    motivasi: 8.8,
+    kesabaran: 9.0,
   },
   t2: {
     description:
       "Alumni UI Kimia, peraih medali OSN. Mengajar kimia organik dan anorganik dengan pendekatan soal-centric dan studi kasus real.",
-    penjelasan: 9.0, interaktif: 8.8, penguasaan: 9.5, ketepatan: 9.2, motivasi: 8.5, kesabaran: 8.8,
+    penjelasan: 9.0,
+    interaktif: 8.8,
+    penguasaan: 9.5,
+    ketepatan: 9.2,
+    motivasi: 8.5,
+    kesabaran: 8.8,
   },
   t3: {
     description:
       "Native-level fluency, sertifikasi IELTS 8.5. Fokus pada speaking confidence, writing structure, dan advanced vocabulary.",
-    penjelasan: 9.5, interaktif: 9.5, penguasaan: 9.2, ketepatan: 9.0, motivasi: 9.6, kesabaran: 9.4,
+    penjelasan: 9.5,
+    interaktif: 9.5,
+    penguasaan: 9.2,
+    ketepatan: 9.0,
+    motivasi: 9.6,
+    kesabaran: 9.4,
   },
   t4: {
     description:
       "Master Teacher Fisika dengan 10+ tahun pengalaman. Kuat di listrik-magnet, mekanika, dan pembahasan soal Olimpiade.",
-    penjelasan: 8.8, interaktif: 8.0, penguasaan: 9.5, ketepatan: 9.0, motivasi: 8.2, kesabaran: 8.6,
+    penjelasan: 8.8,
+    interaktif: 8.0,
+    penguasaan: 9.5,
+    ketepatan: 9.0,
+    motivasi: 8.2,
+    kesabaran: 8.6,
   },
   t5: {
     description:
       "Alumni UGM Biologi, riset di bidang fisiologi manusia. Mengajar dengan analogi lapangan dan visual anatomi interaktif.",
-    penjelasan: 9.0, interaktif: 9.2, penguasaan: 9.0, ketepatan: 8.5, motivasi: 9.0, kesabaran: 9.5,
+    penjelasan: 9.0,
+    interaktif: 9.2,
+    penguasaan: 9.0,
+    ketepatan: 8.5,
+    motivasi: 9.0,
+    kesabaran: 9.5,
   },
 };
 
@@ -189,11 +212,7 @@ export function useTeacherProfiles() {
 
     const ch = supa
       .channel(`tp_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "teacher_profiles" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "teacher_profiles" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -206,9 +225,7 @@ export function useTeacherProfiles() {
     let isNew = true;
     setList((prev) => {
       isNew = !prev.some((t) => t.id === p.id);
-      return prev.some((t) => t.id === p.id)
-        ? prev.map((t) => (t.id === p.id ? p : t))
-        : [p, ...prev];
+      return prev.some((t) => t.id === p.id) ? prev.map((t) => (t.id === p.id ? p : t)) : [p, ...prev];
     });
     const supa = getSupabase();
     if (supa) void supa.from("teacher_profiles").upsert(toDb(p));

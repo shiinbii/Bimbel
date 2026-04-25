@@ -1,5 +1,4 @@
 name: CI
-
 # Staging = shiinbii (auto via push/PR)
 # Production = production (manual push dari operator, TIDAK ter-trigger dari shiinbii)
 # Tiap push ke 1 branch hanya menjalankan CI untuk branch itu sendiri —
@@ -9,25 +8,20 @@ on:
     branches: [shiinbii, production]
   pull_request:
     branches: [shiinbii, production]
-
 jobs:
   typecheck:
     name: Typecheck & Lint (${{ github.ref_name }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "yarn"
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
       - name: TypeScript typecheck
-        run: yarn tsc --noEmit
-
+        run: npx tsc --noEmit
       - name: Lint (non-blocking)
-        run: yarn next lint --dir src || echo "lint finished"
+        run: npx next lint --dir src || echo "lint finished"

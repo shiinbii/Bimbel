@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 export interface Brochure {
   id: string;
@@ -46,7 +46,7 @@ const DEFAULT_BROCHURES: Brochure[] = [
           <rect width='1200' height='600' fill='%236366f1'/>
           <text x='60' y='180' font-family='Georgia,serif' font-size='68' fill='white'>Naomi Ardelia</text>
           <text x='60' y='240' font-family='sans-serif' font-size='28' fill='rgba(255,255,255,0.85)'>Lolos Kedokteran UI 2025</text>
-        </svg>`
+        </svg>`,
       ),
     title: "Naomi Ardelia",
     subtitle: "Lolos Kedokteran UI 2025",
@@ -67,10 +67,7 @@ export function useBrochures() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data, error } = await supa
-        .from("brochures")
-        .select("*")
-        .order("order", { ascending: true });
+      const { data, error } = await supa.from("brochures").select("*").order("order", { ascending: true });
       if (cancelled) return;
       if (error) {
         console.warn("[brochures] select error:", error.message);
@@ -86,11 +83,7 @@ export function useBrochures() {
 
     const ch = supa
       .channel(`br_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "brochures" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "brochures" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -144,9 +137,7 @@ export function useBrochures() {
 
   const remove = useCallback((id: string) => {
     const supa = getSupabase();
-    setList((prev) =>
-      prev.filter((x) => x.id !== id).map((x, i) => ({ ...x, order: i + 1 }))
-    );
+    setList((prev) => prev.filter((x) => x.id !== id).map((x, i) => ({ ...x, order: i + 1 })));
     if (supa) {
       void supa
         .from("brochures")

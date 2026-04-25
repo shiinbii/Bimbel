@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo } from "react";
 
 import { Box, Button, Card, CardContent, Chip, Grid, Typography } from "@mui/material";
 
@@ -99,20 +99,7 @@ export default function QuizHistoryPage() {
         {list.length === 0 ? (
           <Card>
             <CardContent sx={{ textAlign: "center", py: 6 }}>
-              <Box
-                sx={{
-                  width: 56,
-                  height: 56,
-                  mx: "auto",
-                  borderRadius: 2,
-                  bgcolor: "primary.light",
-                  color: "primary.main",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 2,
-                }}
-              >
+              <Box sx={{ color: "primary.main", display: "inline-flex", justifyContent: "center", mb: 2 }}>
                 <NiDocumentFull size="large" />
               </Box>
               <Typography variant="subtitle1">Belum ada pengerjaan soal</Typography>
@@ -126,7 +113,7 @@ export default function QuizHistoryPage() {
             {list.map((a) => (
               <Card key={a.id}>
                 <CardContent>
-                  <Box className="flex items-center gap-2.5 flex-wrap">
+                  <Box className="flex flex-wrap items-center gap-2.5">
                     <Box
                       sx={{
                         width: 64,
@@ -151,25 +138,18 @@ export default function QuizHistoryPage() {
                       </Typography>
                     </Box>
 
-                    <Box className="flex-1 min-w-0">
-                      <Box className="flex items-center gap-1 flex-wrap">
+                    <Box className="min-w-0 flex-1">
+                      <Box className="flex flex-wrap items-center gap-1">
                         <Typography variant="subtitle1" noWrap>
                           {a.testTitle}
                         </Typography>
                         <Chip size="small" label={a.subject} color="primary" variant="outlined" />
-                        {a.cancelled && (
-                          <Chip size="small" label="Dibatalkan" color="warning" variant="outlined" />
-                        )}
+                        {a.cancelled && <Chip size="small" label="Dibatalkan" color="warning" variant="outlined" />}
                         {a.flagged && (
-                          <Chip
-                            size="small"
-                            label="Ditandai"
-                            color="error"
-                            icon={<NiShieldCross size="small" />}
-                          />
+                          <Chip size="small" label="Ditandai" color="error" icon={<NiShieldCross size="small" />} />
                         )}
                       </Box>
-                      <Box className="flex items-center gap-2 mt-1 flex-wrap">
+                      <Box className="mt-1 flex flex-wrap items-center gap-2">
                         <Box className="text-text-secondary flex items-center gap-1">
                           <NiCheck size="small" />
                           <Typography variant="caption">{a.correct} benar</Typography>
@@ -179,14 +159,10 @@ export default function QuizHistoryPage() {
                           <Typography variant="caption">{a.wrong} salah</Typography>
                         </Box>
                         <Typography variant="caption" className="text-text-secondary">
-                          {a.unanswered} kosong · {Math.floor(a.durationUsedSec / 60)}m{" "}
-                          {a.durationUsedSec % 60}s
+                          {a.unanswered} kosong · {Math.floor(a.durationUsedSec / 60)}m {a.durationUsedSec % 60}s
                         </Typography>
                         {a.tabSwitches > 0 && (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: a.flagged ? "error.main" : "warning.main" }}
-                          >
+                          <Typography variant="caption" sx={{ color: a.flagged ? "error.main" : "warning.main" }}>
                             {a.tabSwitches}× pindah tab
                           </Typography>
                         )}

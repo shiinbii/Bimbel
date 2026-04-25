@@ -20,11 +20,7 @@ export const TIER_MAP: Record<Tier, TierFeatures> = {
     canAccessZoom: false,
     canRequestPrivateZoom: false,
     description: "Akses dasar — soal & pre-test gratis.",
-    highlights: [
-      "Maksimal 10 quiz aktif",
-      "Tidak termasuk sesi zoom live",
-      "Cocok untuk mencoba platform",
-    ],
+    highlights: ["Maksimal 10 quiz aktif", "Tidak termasuk sesi zoom live", "Cocok untuk mencoba platform"],
   },
   BASIC: {
     label: "Basic",
@@ -33,11 +29,7 @@ export const TIER_MAP: Record<Tier, TierFeatures> = {
     canAccessZoom: false,
     canRequestPrivateZoom: false,
     description: "Akses soal lebih banyak.",
-    highlights: [
-      "Maksimal 30 quiz aktif",
-      "Pembahasan lengkap per soal",
-      "Tidak termasuk sesi zoom live",
-    ],
+    highlights: ["Maksimal 30 quiz aktif", "Pembahasan lengkap per soal", "Tidak termasuk sesi zoom live"],
   },
   POPULAR: {
     label: "Popular",
@@ -46,11 +38,7 @@ export const TIER_MAP: Record<Tier, TierFeatures> = {
     canAccessZoom: true,
     canRequestPrivateZoom: false,
     description: "Akses soal + sesi zoom live grup.",
-    highlights: [
-      "Maksimal 80 quiz aktif",
-      "Akses sesi zoom live grup",
-      "Prioritas waiting room",
-    ],
+    highlights: ["Maksimal 80 quiz aktif", "Akses sesi zoom live grup", "Prioritas waiting room"],
   },
   PREMIUM: {
     label: "Premium",

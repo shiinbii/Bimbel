@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Formik, Form, type FormikProps } from "formik";
+import { Form, Formik, type FormikProps } from "formik";
 import { useSnackbar } from "notistack";
+import { useRef, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -29,7 +29,7 @@ import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
 import NiCamera from "@/icons/nexture/ni-camera";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiPlus from "@/icons/nexture/ni-plus";
-import { useBrochures, type Brochure } from "@/lib/brochures-store";
+import { type Brochure, useBrochures } from "@/lib/brochures-store";
 
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
@@ -61,7 +61,12 @@ export default function AdminBrochuresPage() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }}>
-          <Button variant="contained" color="primary" startIcon={<NiPlus size="medium" />} onClick={() => setEditing({ ...EMPTY })}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<NiPlus size="medium" />}
+            onClick={() => setEditing({ ...EMPTY })}
+          >
             Slide Baru
           </Button>
         </Grid>
@@ -72,7 +77,9 @@ export default function AdminBrochuresPage() {
           <Grid size={12}>
             <Card>
               <CardContent sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="body2" className="text-text-secondary">Belum ada slide.</Typography>
+                <Typography variant="body2" className="text-text-secondary">
+                  Belum ada slide.
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -84,9 +91,15 @@ export default function AdminBrochuresPage() {
                 <CardContent className="flex flex-col gap-2">
                   <Typography variant="subtitle1">{b.title}</Typography>
                   {b.subtitle && (
-                    <Typography variant="caption" className="text-text-secondary">{b.subtitle}</Typography>
+                    <Typography variant="caption" className="text-text-secondary">
+                      {b.subtitle}
+                    </Typography>
                   )}
-                  <Stack direction="row" spacing={0.5} sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                  >
                     <IconButton size="small" disabled={i === 0} onClick={() => move(b.id, -1)}>
                       <NiArrowLeft size="small" />
                     </IconButton>
@@ -139,10 +152,28 @@ export default function AdminBrochuresPage() {
 
       <Dialog open={!!deleteFor} onClose={() => setDeleteFor(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Hapus Slide?</DialogTitle>
-        <DialogContent><Typography variant="body2">Slide <strong>{deleteFor?.title}</strong> akan dihapus.</Typography></DialogContent>
+        <DialogContent>
+          <Typography variant="body2">
+            Slide <strong>{deleteFor?.title}</strong> akan dihapus.
+          </Typography>
+        </DialogContent>
         <DialogActions>
-          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>Batal</Button>
-          <Button variant="contained" color="error" onClick={() => { if (deleteFor) { remove(deleteFor.id); enqueueSnackbar("Dihapus", { variant: "success" }); setDeleteFor(null); } }}>Ya, Hapus</Button>
+          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>
+            Batal
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (deleteFor) {
+                remove(deleteFor.id);
+                enqueueSnackbar("Dihapus", { variant: "success" });
+                setDeleteFor(null);
+              }
+            }}
+          >
+            Ya, Hapus
+          </Button>
         </DialogActions>
       </Dialog>
     </Grid>
@@ -277,8 +308,12 @@ function BrochureFormBody({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button variant="paper" color="grey" onClick={onCancel}>Batal</Button>
-        <Button variant="contained" color="primary" onClick={submitForm}>Simpan</Button>
+        <Button variant="paper" color="grey" onClick={onCancel}>
+          Batal
+        </Button>
+        <Button variant="contained" color="primary" onClick={submitForm}>
+          Simpan
+        </Button>
       </DialogActions>
     </Form>
   );

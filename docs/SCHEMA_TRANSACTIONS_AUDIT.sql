@@ -82,14 +82,18 @@ create policy audit_super_admin_read on public.audit_logs
     )
   );
 
--- Admin & super admin boleh insert (dipanggil dari app setelah action)
+-- READ: tetap super admin only (di-define di atas sebagai audit_super_admin_read).
+-- INSERT: siapa saja yang authed boleh insert selama actor-nya email miliknya sendiri.
+-- Artinya:
+--   - Student/teacher/admin/super-admin bisa ter-log saat login/logout
+--   - Tapi user tidak bisa memalsukan actor jadi orang lain
+--   - Hanya super admin yang bisa BACA log (SELECT policy tidak diubah)
 drop policy if exists audit_admin_write on public.audit_logs;
-create policy audit_admin_write on public.audit_logs
+drop policy if exists audit_authed_insert on public.audit_logs;
+create policy audit_authed_insert on public.audit_logs
   for insert with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('ADMIN', 'SUPER_ADMIN')
-    )
+    actor = coalesce(auth.jwt() ->> 'email', '')
+    and auth.uid() is not null
   );
 
 

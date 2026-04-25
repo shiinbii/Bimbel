@@ -45,10 +45,7 @@ export default function ZoomWaitingRoomPage() {
   const params = useParams<{ id: string }>();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const session = useMemo(
-    () => zoomList.find((z) => z.id === params.id),
-    [params.id, zoomList],
-  );
+  const session = useMemo(() => zoomList.find((z) => z.id === params.id), [params.id, zoomList]);
 
   if (!currentTier.canAccessZoom) {
     return (
@@ -56,9 +53,7 @@ export default function ZoomWaitingRoomPage() {
         required={firstZoomTier ?? currentTier}
         current={currentTier}
         feature="Sesi Zoom Live"
-        description={`Akses sesi zoom live grup tersedia mulai paket ${
-          firstZoomTier?.name ?? "—"
-        } ke atas.`}
+        description={`Akses sesi zoom live grup tersedia mulai paket ${firstZoomTier?.name ?? "—"} ke atas.`}
       />
     );
   }
@@ -213,12 +208,7 @@ export default function ZoomWaitingRoomPage() {
                       Sesi Berakhir
                     </Button>
                   ) : (
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      startIcon={<NiShield size={16} />}
-                      disabled
-                    >
+                    <Button variant="outlined" size="large" startIcon={<NiShield size={16} />} disabled>
                       Tunggu sampai LIVE
                     </Button>
                   )}
@@ -238,8 +228,7 @@ export default function ZoomWaitingRoomPage() {
                 Chat Room
               </Typography>
               <Typography variant="body2" sx={{ mt: 1 }}>
-                Chat live peserta akan tampil di sini saat sesi berlangsung.
-                Fitur ini akan aktif di update berikutnya.
+                Chat live peserta akan tampil di sini saat sesi berlangsung. Fitur ini akan aktif di update berikutnya.
               </Typography>
             </CardContent>
           </Card>
@@ -250,8 +239,7 @@ export default function ZoomWaitingRoomPage() {
         <DialogTitle>Masuk Zoom Meeting?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Kamu akan membuka tab baru ke <strong>{session.title}</strong>. Pastikan kamera + mic
-            sudah siap.
+            Kamu akan membuka tab baru ke <strong>{session.title}</strong>. Pastikan kamera + mic sudah siap.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

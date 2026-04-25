@@ -1,7 +1,7 @@
 "use client";
 
-import { getSupabase } from "./supabase";
 import { IDLE_COOKIE_NAME } from "./idle-config";
+import { getSupabase } from "./supabase";
 import type { Role } from "./types";
 
 export interface ProfileRow {
@@ -50,17 +50,13 @@ export async function getMyProfile(): Promise<ProfileRow | null> {
   const { data: s } = await supa.auth.getSession();
   const uid = s.session?.user.id;
   if (!uid) return null;
-  const { data, error } = await supa
-    .from("profiles")
-    .select("*")
-    .eq("id", uid)
-    .maybeSingle();
+  const { data, error } = await supa.from("profiles").select("*").eq("id", uid).maybeSingle();
   if (error || !data) return null;
   return data as ProfileRow;
 }
 
 export async function updateMyProfile(
-  patch: Partial<Pick<ProfileRow, "name" | "phone" | "avatar_url" | "tier" | "role">>
+  patch: Partial<Pick<ProfileRow, "name" | "phone" | "avatar_url" | "tier" | "role">>,
 ): Promise<{ ok: boolean; error?: string }> {
   const supa = getSupabase();
   if (!supa) return { ok: false, error: "Supabase belum dikonfigurasi" };
@@ -78,8 +74,5 @@ export async function touchLastLogin() {
   const { data: s } = await supa.auth.getSession();
   const uid = s.session?.user.id;
   if (!uid) return;
-  await supa
-    .from("profiles")
-    .update({ last_login_at: new Date().toISOString() })
-    .eq("id", uid);
+  await supa.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", uid);
 }

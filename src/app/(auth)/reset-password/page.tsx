@@ -29,7 +29,7 @@ import NiCrossSquare from "@/icons/nexture/ni-cross-square";
 import NiEyeClose from "@/icons/nexture/ni-eye-close";
 import NiEyeOpen from "@/icons/nexture/ni-eye-open";
 import NiLock from "@/icons/nexture/ni-lock";
-import { SUPABASE_CONFIGURED, getSupabase } from "@/lib/supabase";
+import { getSupabase, SUPABASE_CONFIGURED } from "@/lib/supabase";
 
 const schema = yup.object({
   password: yup
@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
     <Box className="flex min-h-screen w-full items-center justify-center p-4">
       <Paper
         elevation={3}
-        className="bg-foreground outline-line max-w-full w-md rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
+        className="bg-foreground outline-line w-md max-w-full rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
       >
         <Box className="flex flex-col gap-6 px-8 sm:px-14">
           <Box className="flex justify-center">
@@ -112,11 +112,7 @@ export default function ResetPasswordPage() {
           </Box>
 
           {!done ? (
-            <Box
-              component="form"
-              onSubmit={formik.handleSubmit}
-              className="flex flex-col gap-4"
-            >
+            <Box component="form" onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
               <FormControl className="outlined" variant="standard" size="small">
                 <FormLabel component="label" className="flex flex-row">
                   Password Baru
@@ -156,13 +152,7 @@ export default function ResetPasswordPage() {
                   <LinearProgress
                     variant="determinate"
                     value={strengthPct}
-                    color={
-                      strength <= 2
-                        ? "error"
-                        : strength <= 3
-                        ? "warning"
-                        : "success"
-                    }
+                    color={strength <= 2 ? "error" : strength <= 3 ? "warning" : "success"}
                   />
                   <Typography variant="caption" className="text-text-secondary">
                     Kekuatan password:{" "}
@@ -170,12 +160,12 @@ export default function ResetPasswordPage() {
                       {strength <= 1
                         ? "Sangat lemah"
                         : strength === 2
-                        ? "Lemah"
-                        : strength === 3
-                        ? "Cukup"
-                        : strength === 4
-                        ? "Kuat"
-                        : "Sangat kuat"}
+                          ? "Lemah"
+                          : strength === 3
+                            ? "Cukup"
+                            : strength === 4
+                              ? "Kuat"
+                              : "Sangat kuat"}
                     </strong>
                   </Typography>
                 </Box>
@@ -209,13 +199,7 @@ export default function ResetPasswordPage() {
                 variant="contained"
                 fullWidth
                 disabled={formik.isSubmitting}
-                endIcon={
-                  formik.isSubmitting ? (
-                    <CircularProgress size={16} />
-                  ) : (
-                    <NiArrowRight size="medium" />
-                  )
-                }
+                endIcon={formik.isSubmitting ? <CircularProgress size={16} /> : <NiArrowRight size="medium" />}
               >
                 {formik.isSubmitting ? "Menyimpan..." : "Simpan Password Baru"}
               </Button>
@@ -224,9 +208,7 @@ export default function ResetPasswordPage() {
             <>
               <Alert severity="success" icon={<NiCheck size="medium" />}>
                 <Typography variant="subtitle2">Password Diganti</Typography>
-                <Typography variant="body2">
-                  Silakan masuk dengan password baru.
-                </Typography>
+                <Typography variant="body2">Silakan masuk dengan password baru.</Typography>
               </Alert>
               <Button
                 variant="contained"

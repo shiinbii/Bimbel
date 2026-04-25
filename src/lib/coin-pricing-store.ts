@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.coin_pricing";
 
@@ -45,11 +45,7 @@ export function useCoinPricing() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("coin_pricing")
-        .select("payload")
-        .eq("id", "default")
-        .maybeSingle();
+      const { data } = await supa.from("coin_pricing").select("payload").eq("id", "default").maybeSingle();
       if (cancelled) return;
       const payload = (data?.payload as Partial<CoinPricing>) ?? {};
       setState({ ...defaultCoinPricing, ...payload });
@@ -59,11 +55,7 @@ export function useCoinPricing() {
 
     const ch = supa
       .channel(`cprice_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "coin_pricing" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "coin_pricing" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -76,9 +68,7 @@ export function useCoinPricing() {
     writeLS(next);
     const supa = getSupabase();
     if (supa)
-      void supa
-        .from("coin_pricing")
-        .upsert({ id: "default", payload: next, updated_at: new Date().toISOString() });
+      void supa.from("coin_pricing").upsert({ id: "default", payload: next, updated_at: new Date().toISOString() });
   };
 
   const update = useCallback((patch: Partial<CoinPricing>) => {
@@ -101,11 +91,7 @@ export function useCoinPricing() {
   return { pricing, update, reset, loaded };
 }
 
-export function packageDiscount(
-  packagePriceRp: number,
-  packagePoints: number,
-  pricePerCoin: number,
-): number {
+export function packageDiscount(packagePriceRp: number, packagePoints: number, pricePerCoin: number): number {
   if (pricePerCoin <= 0 || packagePoints <= 0) return 0;
   const base = packagePoints * pricePerCoin;
   if (base <= 0) return 0;

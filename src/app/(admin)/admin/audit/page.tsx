@@ -74,9 +74,7 @@ function AuditContent() {
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            {loaded && source === "mock" && (
-              <Chip size="small" label="Data dummy" variant="outlined" color="warning" />
-            )}
+            {loaded && source === "mock" && <Chip size="small" label="Data dummy" variant="outlined" color="warning" />}
             <Chip icon={<NiShieldCheck size="small" />} label="Super Admin Only" color="warning" />
           </Stack>
         </Grid>
@@ -181,7 +179,12 @@ function AuditContent() {
                           <Typography variant="body2">{log.user}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip size="small" label={log.role.replace("_", " ")} color={ROLE_COLOR[log.role]} variant="outlined" />
+                          <Chip
+                            size="small"
+                            label={log.role.replace("_", " ")}
+                            color={ROLE_COLOR[log.role]}
+                            variant="outlined"
+                          />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
@@ -194,7 +197,11 @@ function AuditContent() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="caption" sx={{ fontFamily: "monospace" }} className="text-text-secondary-light">
+                          <Typography
+                            variant="caption"
+                            sx={{ fontFamily: "monospace" }}
+                            className="text-text-secondary-light"
+                          >
                             {log.ip}
                           </Typography>
                         </TableCell>

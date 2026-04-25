@@ -1,17 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.private_zoom_requests";
 
-export type PrivateZoomStatus =
-  | "PENDING"
-  | "SCHEDULED"
-  | "CONFIRMED"
-  | "REJECTED"
-  | "CANCELLED"
-  | "DONE";
+export type PrivateZoomStatus = "PENDING" | "SCHEDULED" | "CONFIRMED" | "REJECTED" | "CANCELLED" | "DONE";
 
 export interface PrivateZoomRequest {
   id: string;
@@ -117,10 +111,7 @@ export function usePrivateZoom() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("private_zoom_requests")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supa.from("private_zoom_requests").select("*").order("created_at", { ascending: false });
       if (cancelled) return;
       setList(((data as DbRow[]) ?? []).map(toPZ));
       setLoaded(true);
@@ -129,11 +120,7 @@ export function usePrivateZoom() {
 
     const ch = supa
       .channel(`pz_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "private_zoom_requests" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "private_zoom_requests" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -142,45 +129,38 @@ export function usePrivateZoom() {
     };
   }, []);
 
-  const create = useCallback(
-    (r: Omit<PrivateZoomRequest, "id" | "status" | "createdAt">) => {
-      const supa = getSupabase();
-      const full: PrivateZoomRequest = {
-        ...r,
-        id: `pz_${Date.now()}`,
-        status: "PENDING",
-        createdAt: new Date().toISOString(),
-      };
-      setList((prev) => [full, ...prev]);
-      if (supa) void supa.from("private_zoom_requests").insert(toDb(full));
-      else writeLS([full, ...readLS()]);
-      return full;
-    },
-    []
-  );
+  const create = useCallback((r: Omit<PrivateZoomRequest, "id" | "status" | "createdAt">) => {
+    const supa = getSupabase();
+    const full: PrivateZoomRequest = {
+      ...r,
+      id: `pz_${Date.now()}`,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
+    setList((prev) => [full, ...prev]);
+    if (supa) void supa.from("private_zoom_requests").insert(toDb(full));
+    else writeLS([full, ...readLS()]);
+    return full;
+  }, []);
 
-  const update = useCallback(
-    (id: string, patch: Partial<PrivateZoomRequest>) => {
-      const supa = getSupabase();
-      setList((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-      if (supa) {
-        const dbPatch: Record<string, unknown> = {};
-        if (patch.status !== undefined) dbPatch.status = patch.status;
-        if (patch.scheduledAt !== undefined) dbPatch.scheduled_at = patch.scheduledAt;
-        if (patch.durationMinutes !== undefined) dbPatch.duration_minutes = patch.durationMinutes;
-        if (patch.meetingUrl !== undefined) dbPatch.meeting_url = patch.meetingUrl;
-        if (patch.studentNote !== undefined) dbPatch.student_note = patch.studentNote;
-        if (patch.notes !== undefined) dbPatch.notes = patch.notes;
-        if (patch.topic !== undefined) dbPatch.topic = patch.topic;
-        if (patch.subject !== undefined) dbPatch.subject = patch.subject;
-        if (Object.keys(dbPatch).length > 0)
-          void supa.from("private_zoom_requests").update(dbPatch).eq("id", id);
-      } else {
-        writeLS(readLS().map((r) => (r.id === id ? { ...r, ...patch } : r)));
-      }
-    },
-    []
-  );
+  const update = useCallback((id: string, patch: Partial<PrivateZoomRequest>) => {
+    const supa = getSupabase();
+    setList((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    if (supa) {
+      const dbPatch: Record<string, unknown> = {};
+      if (patch.status !== undefined) dbPatch.status = patch.status;
+      if (patch.scheduledAt !== undefined) dbPatch.scheduled_at = patch.scheduledAt;
+      if (patch.durationMinutes !== undefined) dbPatch.duration_minutes = patch.durationMinutes;
+      if (patch.meetingUrl !== undefined) dbPatch.meeting_url = patch.meetingUrl;
+      if (patch.studentNote !== undefined) dbPatch.student_note = patch.studentNote;
+      if (patch.notes !== undefined) dbPatch.notes = patch.notes;
+      if (patch.topic !== undefined) dbPatch.topic = patch.topic;
+      if (patch.subject !== undefined) dbPatch.subject = patch.subject;
+      if (Object.keys(dbPatch).length > 0) void supa.from("private_zoom_requests").update(dbPatch).eq("id", id);
+    } else {
+      writeLS(readLS().map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    }
+  }, []);
 
   const remove = useCallback((id: string) => {
     const supa = getSupabase();

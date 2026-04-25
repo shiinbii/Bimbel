@@ -1,22 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  Avatar,
-  Badge,
-  Box,
-  Chip,
-  Fab,
-  IconButton,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-  Zoom,
-} from "@mui/material";
+import { Avatar, Badge, Box, Chip, Fab, IconButton, Paper, Stack, TextField, Typography, Zoom } from "@mui/material";
 
 import NiArrowLeft from "@/icons/nexture/ni-arrow-left";
 import NiCheck from "@/icons/nexture/ni-check";
@@ -26,10 +14,10 @@ import NiMessage from "@/icons/nexture/ni-message";
 import NiSendRight from "@/icons/nexture/ni-send-right";
 import { useCurrentUser } from "@/lib/current-user";
 import {
-  useHelpdeskMessages,
-  useHelpdeskSessions,
   type HelpdeskMessage,
   type HelpdeskSession,
+  useHelpdeskMessages,
+  useHelpdeskSessions,
 } from "@/lib/helpdesk-store";
 import { useRole } from "@/lib/role-context";
 
@@ -174,7 +162,17 @@ export default function AdminHelpdeskWidget() {
             overflow: "hidden",
           }}
         >
-          <Box sx={{ p: 2, bgcolor: "primary.light", display: "flex", alignItems: "center", gap: 1.5, borderBottom: "1px solid", borderColor: "divider" }}>
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "primary.light",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
+          >
             {activeId && (
               <IconButton size="small" onClick={() => setActiveId(null)}>
                 <NiArrowLeft size="small" />
@@ -184,9 +182,7 @@ export default function AdminHelpdeskWidget() {
               <NiHeadset size="medium" />
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle2">
-                {activeId ? "Balas Chat" : "Helpdesk Masuk"}
-              </Typography>
+              <Typography variant="subtitle2">{activeId ? "Balas Chat" : "Helpdesk Masuk"}</Typography>
               <Typography variant="caption" className="text-text-secondary">
                 {openSessions.length} aktif · {totalUnread} belum dibaca
               </Typography>
@@ -250,7 +246,17 @@ function SessionsList({
 
   if (sorted.length === 0) {
     return (
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", p: 4, textAlign: "center" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+          textAlign: "center",
+        }}
+      >
         <NiMessage size="large" />
         <Typography variant="body2" className="text-text-secondary" sx={{ mt: 1 }}>
           Belum ada sesi chat aktif
@@ -285,7 +291,12 @@ function SessionsList({
               <Typography variant="subtitle2" noWrap sx={{ flex: 1 }}>
                 {s.studentName}
               </Typography>
-              <Chip size="small" label={s.status === "OPEN" ? "BARU" : "AKTIF"} color={s.status === "OPEN" ? "warning" : "primary"} variant="outlined" />
+              <Chip
+                size="small"
+                label={s.status === "OPEN" ? "BARU" : "AKTIF"}
+                color={s.status === "OPEN" ? "warning" : "primary"}
+                variant="outlined"
+              />
             </Stack>
             <Typography variant="caption" className="text-text-secondary" noWrap component="p">
               {s.lastMessagePreview}
@@ -352,7 +363,12 @@ function ActiveChat({
 
   return (
     <>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider", bgcolor: "action.hover" }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider", bgcolor: "action.hover" }}
+      >
         <Avatar sx={{ width: 26, height: 26 }}>{session.studentName.charAt(0)}</Avatar>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography variant="subtitle2" noWrap>
@@ -364,7 +380,10 @@ function ActiveChat({
         </Box>
       </Stack>
 
-      <Box ref={scrollRef} sx={{ flex: 1, overflowY: "auto", p: 1.5, display: "flex", flexDirection: "column", gap: 1 }}>
+      <Box
+        ref={scrollRef}
+        sx={{ flex: 1, overflowY: "auto", p: 1.5, display: "flex", flexDirection: "column", gap: 1 }}
+      >
         {messages.length === 0 ? (
           <Typography variant="body2" className="text-text-secondary" sx={{ textAlign: "center", py: 5 }}>
             Mulai percakapan dengan {session.studentName.split(" ")[0]}
@@ -373,9 +392,23 @@ function ActiveChat({
           messages.map((m: HelpdeskMessage) => {
             const mine = m.author === "admin";
             return (
-              <Stack key={m.id} direction="row" spacing={1} justifyContent={mine ? "flex-end" : "flex-start"} alignItems="flex-end">
+              <Stack
+                key={m.id}
+                direction="row"
+                spacing={1}
+                justifyContent={mine ? "flex-end" : "flex-start"}
+                alignItems="flex-end"
+              >
                 {!mine && <Avatar sx={{ width: 26, height: 26 }}>{m.authorName.charAt(0)}</Avatar>}
-                <Box sx={{ maxWidth: "75%", px: 1.5, py: 1, borderRadius: 2, bgcolor: mine ? "primary.light" : "action.hover" }}>
+                <Box
+                  sx={{
+                    maxWidth: "75%",
+                    px: 1.5,
+                    py: 1,
+                    borderRadius: 2,
+                    bgcolor: mine ? "primary.light" : "action.hover",
+                  }}
+                >
                   <Typography variant="body2">{m.text}</Typography>
                   <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.25 }}>
                     <Typography variant="caption" className="text-text-secondary-light">

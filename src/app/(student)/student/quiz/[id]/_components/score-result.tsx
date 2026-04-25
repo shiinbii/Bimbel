@@ -35,9 +35,7 @@ interface Props {
 
 export default function ScoreResult({ test, answers, onRetry, onBack, hideExplanations }: Props) {
   const correctCount = test.questions.filter((q) => answers[q.id] === q.correct).length;
-  const wrongCount = test.questions.filter(
-    (q) => answers[q.id] && answers[q.id] !== q.correct,
-  ).length;
+  const wrongCount = test.questions.filter((q) => answers[q.id] && answers[q.id] !== q.correct).length;
   const unanswered = test.questions.length - correctCount - wrongCount;
   const score = Math.round((correctCount / Math.max(1, test.questions.length)) * 100);
   const passed = score >= test.passingScore;
@@ -62,11 +60,7 @@ export default function ScoreResult({ test, answers, onRetry, onBack, hideExplan
             <NiTrophy size={28} />
           </Box>
           <Box>
-            <Chip
-              label={passed ? "LULUS" : "BELUM LULUS"}
-              color={passed ? "success" : "error"}
-              sx={{ mb: 2 }}
-            />
+            <Chip label={passed ? "LULUS" : "BELUM LULUS"} color={passed ? "success" : "error"} sx={{ mb: 2 }} />
           </Box>
           <Typography variant="overline" color="text.secondary">
             Skor Akhir
@@ -115,12 +109,7 @@ export default function ScoreResult({ test, answers, onRetry, onBack, hideExplan
             </Grid>
           </Grid>
 
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            justifyContent="center"
-            sx={{ mt: 4 }}
-          >
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center" sx={{ mt: 4 }}>
             <Button variant="outlined" onClick={onBack}>
               Kembali ke Daftar
             </Button>
@@ -145,20 +134,13 @@ export default function ScoreResult({ test, answers, onRetry, onBack, hideExplan
 
         {hideExplanations && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Tier gratis hanya menampilkan benar/salah. Naik tier untuk membuka
-            pembahasan lengkap + alasan per opsi.
+            Tier gratis hanya menampilkan benar/salah. Naik tier untuk membuka pembahasan lengkap + alasan per opsi.
           </Alert>
         )}
 
         <Stack spacing={1}>
           {test.questions.map((q, i) => (
-            <ReviewItem
-              key={q.id}
-              q={q}
-              index={i}
-              userAnswer={answers[q.id]}
-              hideExplanation={hideExplanations}
-            />
+            <ReviewItem key={q.id} q={q} index={i} userAnswer={answers[q.id]} hideExplanation={hideExplanations} />
           ))}
         </Stack>
       </Box>
@@ -188,11 +170,7 @@ function ReviewItem({
   ) : (
     <NiCrossSquare size={16} />
   );
-  const statusColor: "success" | "error" | "default" = isCorrect
-    ? "success"
-    : isUnanswered
-      ? "default"
-      : "error";
+  const statusColor: "success" | "error" | "default" = isCorrect ? "success" : isUnanswered ? "default" : "error";
 
   return (
     <Accordion
@@ -203,19 +181,9 @@ function ReviewItem({
     >
       <AccordionSummary expandIcon={<NiChevronDownSmall size={16} />}>
         <Stack direction="row" spacing={2} alignItems="center" sx={{ width: "100%" }}>
-          <Chip
-            icon={statusIcon}
-            color={statusColor}
-            size="small"
-            label={`#${index + 1}`}
-          />
+          <Chip icon={statusIcon} color={statusColor} size="small" label={`#${index + 1}`} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="body2"
-              noWrap
-              title={q.text}
-              color={isCorrect ? "text.primary" : "text.secondary"}
-            >
+            <Typography variant="body2" noWrap title={q.text} color={isCorrect ? "text.primary" : "text.secondary"}>
               {q.text}
             </Typography>
           </Box>
@@ -228,12 +196,7 @@ function ReviewItem({
                 variant="outlined"
               />
             )}
-            <Chip
-              size="small"
-              label={`Benar: ${q.correct}`}
-              color="success"
-              variant="outlined"
-            />
+            <Chip size="small" label={`Benar: ${q.correct}`} color="success" variant="outlined" />
           </Stack>
         </Stack>
       </AccordionSummary>
@@ -267,9 +230,7 @@ function ReviewItem({
         </Grid>
 
         {hideExplanation ? (
-          <Alert severity="warning">
-            Pembahasan terkunci. Upgrade tier untuk melihat pembahasan lengkap.
-          </Alert>
+          <Alert severity="warning">Pembahasan terkunci. Upgrade tier untuk melihat pembahasan lengkap.</Alert>
         ) : (
           <Stack spacing={2}>
             {userAnswer && !isCorrect && q.optionExplanations?.[userAnswer] && (
@@ -277,9 +238,7 @@ function ReviewItem({
                 <Typography variant="overline" display="block">
                   Kenapa {userAnswer} bukan jawaban yang tepat
                 </Typography>
-                <Typography variant="body2">
-                  {q.optionExplanations[userAnswer]}
-                </Typography>
+                <Typography variant="body2">{q.optionExplanations[userAnswer]}</Typography>
               </Alert>
             )}
             <Alert severity="info">

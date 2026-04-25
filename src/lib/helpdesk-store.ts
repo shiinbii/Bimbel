@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const SESSIONS_KEY = "edudoc.helpdesk_sessions";
 const MESSAGES_KEY = "edudoc.helpdesk_messages";
@@ -150,8 +150,7 @@ export function useHelpdeskSessions() {
       setSessions(readLS<HelpdeskSession[]>(SESSIONS_KEY, []));
       setLoaded(true);
       const onStorage = (e: StorageEvent) => {
-        if (e.key === SESSIONS_KEY)
-          setSessions(readLS<HelpdeskSession[]>(SESSIONS_KEY, []));
+        if (e.key === SESSIONS_KEY) setSessions(readLS<HelpdeskSession[]>(SESSIONS_KEY, []));
       };
       window.addEventListener("storage", onStorage);
       return () => window.removeEventListener("storage", onStorage);
@@ -175,26 +174,24 @@ export function useHelpdeskSessions() {
 
     const ch = supa
       .channel(channelName("helpdesk_sessions_rt"))
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "helpdesk_sessions" },
-        (payload) => {
-          setSessions((prev) => {
-            if (payload.eventType === "DELETE") {
-              const oldId = (payload.old as { id?: string }).id;
-              return prev.filter((s) => s.id !== oldId);
-            }
-            const row = toSession(payload.new as DbSession);
-            const without = prev.filter((s) => s.id !== row.id);
-            return [row, ...without].sort(
-              (a, b) =>
-                new Date(b.lastMessageAt).getTime() -
-                new Date(a.lastMessageAt).getTime()
-            );
-          });
+      .on("postgres_changes", { event: "*", schema: "public", table: "helpdesk_sessions" }, (payload) => {
+        setSessions((prev) => {
+          if (payload.eventType === "DELETE") {
+            const oldId = (payload.old as { id?: string }).id;
+            return prev.filter((s) => s.id !== oldId);
+          }
+          const row = toSession(payload.new as DbSession);
+          const without = prev.filter((s) => s.id !== row.id);
+          return [row, ...without].sort(
+            (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime(),
+          );
+        });
+      })
+      .subscribe((status, err) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("[helpdesk_sessions] realtime subscribe", status, err);
         }
-      )
-      .subscribe();
+      });
 
     return () => {
       cancelled = true;
@@ -203,12 +200,10 @@ export function useHelpdeskSessions() {
   }, []);
 
   const openOrGet = useCallback(
-    (studentEmail: string, studentName: string): HelpdeskSession => {
+    async (studentEmail: string, studentName: string): Promise<HelpdeskSession> => {
       const supa = getSupabase();
       const existing = sessions.find(
-        (s) =>
-          s.studentEmail.toLowerCase() === studentEmail.toLowerCase() &&
-          s.status !== "CLOSED"
+        (s) => s.studentEmail.toLowerCase() === studentEmail.toLowerCase() && s.status !== "CLOSED",
       );
       if (existing) return existing;
 
@@ -232,9 +227,13 @@ export function useHelpdeskSessions() {
         return fresh;
       }
 
-      // Optimistic local insert; DB insert happens in background
+      // Optimistic local insert agar UI student responsif
       setSessions((prev) => [fresh, ...prev]);
-      void supa.from("helpdesk_sessions").insert({
+
+      // AWAIT insert ke DB — kalau pakai fire-and-forget, RLS check di
+      // helpdesk_messages (`exists session WHERE id = session_id`) bisa
+      // jalan sebelum row session commit → message insert ditolak diam-diam.
+      const { error } = await supa.from("helpdesk_sessions").insert({
         id: fresh.id,
         student_email: fresh.studentEmail,
         student_name: fresh.studentName,
@@ -243,47 +242,41 @@ export function useHelpdeskSessions() {
         last_message_at: fresh.lastMessageAt,
         last_message_preview: fresh.lastMessagePreview,
       });
+      if (error) {
+        console.warn("[helpdesk_sessions] insert failed:", error.message, "student_email:", studentEmail);
+      }
       return fresh;
     },
-    [sessions]
+    [sessions],
   );
 
-  const updateSession = useCallback(
-    (id: string, patch: Partial<HelpdeskSession>) => {
-      const supa = getSupabase();
-      if (!supa) {
-        const next = readLS<HelpdeskSession[]>(SESSIONS_KEY, []).map((s) =>
-          s.id === id ? { ...s, ...patch } : s
-        );
-        writeLS(SESSIONS_KEY, next);
-        setSessions(next);
-        return;
-      }
+  const updateSession = useCallback((id: string, patch: Partial<HelpdeskSession>) => {
+    const supa = getSupabase();
+    if (!supa) {
+      const next = readLS<HelpdeskSession[]>(SESSIONS_KEY, []).map((s) => (s.id === id ? { ...s, ...patch } : s));
+      writeLS(SESSIONS_KEY, next);
+      setSessions(next);
+      return;
+    }
 
-      setSessions((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, ...patch } : s))
-      );
+    setSessions((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
 
-      const dbPatch: Record<string, unknown> = {};
-      if (patch.status !== undefined) dbPatch.status = patch.status;
-      if (patch.adminEmail !== undefined) dbPatch.admin_email = patch.adminEmail;
-      if (patch.adminName !== undefined) dbPatch.admin_name = patch.adminName;
-      if (patch.lastMessageAt !== undefined)
-        dbPatch.last_message_at = patch.lastMessageAt;
-      if (patch.lastMessagePreview !== undefined)
-        dbPatch.last_message_preview = patch.lastMessagePreview;
-      if (Object.keys(dbPatch).length > 0) {
-        void supa.from("helpdesk_sessions").update(dbPatch).eq("id", id);
-      }
-    },
-    []
-  );
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.status !== undefined) dbPatch.status = patch.status;
+    if (patch.adminEmail !== undefined) dbPatch.admin_email = patch.adminEmail;
+    if (patch.adminName !== undefined) dbPatch.admin_name = patch.adminName;
+    if (patch.lastMessageAt !== undefined) dbPatch.last_message_at = patch.lastMessageAt;
+    if (patch.lastMessagePreview !== undefined) dbPatch.last_message_preview = patch.lastMessagePreview;
+    if (Object.keys(dbPatch).length > 0) {
+      void supa.from("helpdesk_sessions").update(dbPatch).eq("id", id);
+    }
+  }, []);
 
   const closeSession = useCallback(
     (id: string) => {
       updateSession(id, { status: "CLOSED" });
     },
-    [updateSession]
+    [updateSession],
   );
 
   return { sessions, openOrGet, updateSession, closeSession, loaded };
@@ -305,7 +298,7 @@ export function useHelpdeskMessages(sessionId: string | null) {
         setMessages(
           all
             .filter((m) => m.sessionId === sessionId)
-            .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+            .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()),
         );
       };
       refresh();
@@ -344,10 +337,8 @@ export function useHelpdeskMessages(sessionId: string | null) {
         },
         (payload) => {
           const row = toMessage(payload.new as DbMessage);
-          setMessages((prev) =>
-            prev.some((m) => m.id === row.id) ? prev : [...prev, row]
-          );
-        }
+          setMessages((prev) => (prev.some((m) => m.id === row.id) ? prev : [...prev, row]));
+        },
       )
       .subscribe();
 
@@ -369,9 +360,7 @@ export function useHelpdeskMessages(sessionId: string | null) {
       if (!supa) {
         const next = [...readLS<HelpdeskMessage[]>(MESSAGES_KEY, []), full];
         writeLS(MESSAGES_KEY, next);
-        setMessages((prev) =>
-          msg.sessionId === sessionId ? [...prev, full] : prev
-        );
+        setMessages((prev) => (msg.sessionId === sessionId ? [...prev, full] : prev));
         // update session summary
         const ses = readLS<HelpdeskSession[]>(SESSIONS_KEY, []).map((s) =>
           s.id === msg.sessionId
@@ -379,16 +368,11 @@ export function useHelpdeskMessages(sessionId: string | null) {
                 ...s,
                 lastMessageAt: full.at,
                 lastMessagePreview: full.text.slice(0, 80),
-                status:
-                  s.status === "OPEN" && msg.author === "admin"
-                    ? ("CLAIMED" as const)
-                    : s.status,
-                adminEmail:
-                  msg.author === "admin" ? msg.authorEmail : s.adminEmail,
-                adminName:
-                  msg.author === "admin" ? msg.authorName : s.adminName,
+                status: s.status === "OPEN" && msg.author === "admin" ? ("CLAIMED" as const) : s.status,
+                adminEmail: msg.author === "admin" ? msg.authorEmail : s.adminEmail,
+                adminName: msg.author === "admin" ? msg.authorName : s.adminName,
               }
-            : s
+            : s,
         );
         writeLS(SESSIONS_KEY, ses);
         return full;
@@ -398,18 +382,55 @@ export function useHelpdeskMessages(sessionId: string | null) {
       if (msg.sessionId === sessionId) {
         setMessages((prev) => [...prev, full]);
       }
-      void supa.from("helpdesk_messages").insert({
-        id: full.id,
-        session_id: full.sessionId,
-        author: full.author,
-        author_email: full.authorEmail,
-        author_name: full.authorName,
-        text: full.text,
-        at: full.at,
-      });
+      void supa
+        .from("helpdesk_messages")
+        .insert({
+          id: full.id,
+          session_id: full.sessionId,
+          author: full.author,
+          author_email: full.authorEmail,
+          author_name: full.authorName,
+          text: full.text,
+          at: full.at,
+        })
+        .then(({ error }) => {
+          if (error) {
+            console.warn(
+              "[helpdesk_messages] insert failed:",
+              error.message,
+              "session_id:",
+              full.sessionId,
+              "author:",
+              full.author,
+              "author_email:",
+              full.authorEmail,
+            );
+            return;
+          }
+          // Update session summary supaya admin lihat preview baru di list.
+          // Kalau admin yg kirim, status pindah OPEN→CLAIMED.
+          const sumPatch: Record<string, unknown> = {
+            last_message_at: full.at,
+            last_message_preview: full.text.slice(0, 80),
+          };
+          if (full.author === "admin") {
+            sumPatch.admin_email = full.authorEmail;
+            sumPatch.admin_name = full.authorName;
+            sumPatch.status = "CLAIMED";
+          }
+          void supa
+            .from("helpdesk_sessions")
+            .update(sumPatch)
+            .eq("id", full.sessionId)
+            .then(({ error: updateErr }) => {
+              if (updateErr) {
+                console.warn("[helpdesk_sessions] summary update failed:", updateErr.message);
+              }
+            });
+        });
       return full;
     },
-    [sessionId]
+    [sessionId],
   );
 
   return { messages, send };
@@ -421,7 +442,7 @@ export function usePresenceHeartbeat(
   email: string | undefined,
   name: string,
   role: PresenceEntry["role"],
-  available: boolean
+  available: boolean,
 ) {
   useEffect(() => {
     if (!email || !available) return;
@@ -429,9 +450,7 @@ export function usePresenceHeartbeat(
 
     const tickLS = () => {
       const cur = readLS<PresenceEntry[]>(PRESENCE_KEY, []);
-      const withoutMe = cur.filter(
-        (p) => p.email.toLowerCase() !== email.toLowerCase()
-      );
+      const withoutMe = cur.filter((p) => p.email.toLowerCase() !== email.toLowerCase());
       const next: PresenceEntry[] = [
         ...cleanPresence(withoutMe),
         { email, name, role, available: true, lastSeenAt: Date.now() },
@@ -441,16 +460,25 @@ export function usePresenceHeartbeat(
 
     const tickRemote = () => {
       if (!supa) return;
-      void supa.from("helpdesk_presence").upsert(
-        {
-          email,
-          name,
-          role,
-          available: true,
-          last_seen_at: new Date().toISOString(),
-        },
-        { onConflict: "email" }
-      );
+      void supa
+        .from("helpdesk_presence")
+        .upsert(
+          {
+            email,
+            name,
+            role,
+            available: true,
+            last_seen_at: new Date().toISOString(),
+          },
+          { onConflict: "email" },
+        )
+        .then(({ error }) => {
+          if (error) {
+            // Common cause: tabel `helpdesk_presence` belum dibuat di Supabase
+            // (run docs/SCHEMA_HELPDESK.sql), atau RLS block insert/update.
+            console.warn("[helpdesk_presence] heartbeat failed:", error.message);
+          }
+        });
     };
 
     if (supa) {
@@ -467,9 +495,7 @@ export function usePresenceHeartbeat(
     return () => {
       clearInterval(id);
       const cur = readLS<PresenceEntry[]>(PRESENCE_KEY, []);
-      const next = cur.filter(
-        (p) => p.email.toLowerCase() !== email.toLowerCase()
-      );
+      const next = cur.filter((p) => p.email.toLowerCase() !== email.toLowerCase());
       writeLS(PRESENCE_KEY, next);
     };
   }, [email, name, role, available]);
@@ -500,10 +526,12 @@ export function useOnlineAdmins() {
 
     let cancelled = false;
     const refreshFromDb = async () => {
-      const { data, error } = await supa
-        .from("helpdesk_presence")
-        .select("*");
-      if (cancelled || error) return;
+      const { data, error } = await supa.from("helpdesk_presence").select("*");
+      if (cancelled) return;
+      if (error) {
+        console.warn("[helpdesk_presence] select failed:", error.message);
+        return;
+      }
       setList(cleanPresence((data as DbPresence[]).map(toPresence)));
     };
 
@@ -511,13 +539,9 @@ export function useOnlineAdmins() {
 
     const ch = supa
       .channel(channelName("helpdesk_presence_rt"))
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "helpdesk_presence" },
-        () => {
-          refreshFromDb();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "helpdesk_presence" }, () => {
+        refreshFromDb();
+      })
       .subscribe();
 
     // Local tick to drop stale entries even without events

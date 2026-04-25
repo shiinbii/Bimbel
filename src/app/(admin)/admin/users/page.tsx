@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
 import {
   Avatar,
@@ -29,16 +29,16 @@ import {
   Typography,
 } from "@mui/material";
 
+import { isSuperAdmin } from "@/config/roles";
 import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
 import NiEyeOpen from "@/icons/nexture/ni-eye-open";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiSearch from "@/icons/nexture/ni-search";
-import NiShieldCross from "@/icons/nexture/ni-shield-cross";
 import NiShieldCheck from "@/icons/nexture/ni-shield-check";
+import NiShieldCross from "@/icons/nexture/ni-shield-cross";
 import { useRole } from "@/lib/role-context";
-import { isSuperAdmin } from "@/config/roles";
-import { useUsersStore, type ManagedUser } from "@/lib/users-store";
 import type { Role } from "@/lib/types";
+import { type ManagedUser, useUsersStore } from "@/lib/users-store";
 
 const ROLE_COLOR: Record<Role, "default" | "primary" | "info" | "warning"> = {
   STUDENT: "info",
@@ -117,15 +117,8 @@ export default function AdminUsersPage() {
   }, [list, roleFilter, statusFilter, search]);
 
   const toggleDeactivation = (u: ManagedUser) => {
-    setDeactivated(
-      u.id,
-      !u.deactivated,
-      u.deactivated ? undefined : "ADMIN_ACTION",
-    );
-    enqueueSnackbar(
-      `${u.name} ${u.deactivated ? "diaktifkan" : "dinonaktifkan"}`,
-      { variant: "success" },
-    );
+    setDeactivated(u.id, !u.deactivated, u.deactivated ? undefined : "ADMIN_ACTION");
+    enqueueSnackbar(`${u.name} ${u.deactivated ? "diaktifkan" : "dinonaktifkan"}`, { variant: "success" });
     setSelected(null);
   };
 
@@ -251,10 +244,7 @@ export default function AdminUsersPage() {
                           <Typography variant="body2" className="text-text-secondary">
                             {u.email}
                           </Typography>
-                          <Typography
-                            variant="caption"
-                            className="text-text-secondary-light"
-                          >
+                          <Typography variant="caption" className="text-text-secondary-light">
                             {u.phone ?? "—"}
                           </Typography>
                         </TableCell>
@@ -288,11 +278,7 @@ export default function AdminUsersPage() {
                               color={u.deactivated ? "success" : "warning"}
                               onClick={() => toggleDeactivation(u)}
                             >
-                              {u.deactivated ? (
-                                <NiShieldCheck size="small" />
-                              ) : (
-                                <NiShieldCross size="small" />
-                              )}
+                              {u.deactivated ? <NiShieldCheck size="small" /> : <NiShieldCross size="small" />}
                             </IconButton>
                           )}
                           {canManage && (

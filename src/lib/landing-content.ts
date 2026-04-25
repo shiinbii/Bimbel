@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const KEY = "edudoc.landing_content";
-
 export interface LandingStatItem {
   label: string;
   value: number;
@@ -81,8 +79,7 @@ export const defaultLandingContent: LandingContent = {
   featuresBadge: "Fitur Unggulan",
   featuresTitleLead: "Semua yang kamu butuhkan untuk",
   featuresTitleAccent: "lolos ujian",
-  featuresSubtitle:
-    "Dari soal, sesi live, hingga pembahasan mendalam — semua dalam satu platform terintegrasi.",
+  featuresSubtitle: "Dari soal, sesi live, hingga pembahasan mendalam — semua dalam satu platform terintegrasi.",
   features: [
     {
       title: "Quiz Adaptif",
@@ -104,16 +101,14 @@ export const defaultLandingContent: LandingContent = {
   pricingBadge: "Paket Poin",
   pricingTitleLead: "Bayar sekali,",
   pricingTitleAccent: "belajar selamanya",
-  pricingSubtitle:
-    "Pilih paket yang sesuai kebutuhan. Tanpa langganan. Tanpa biaya tersembunyi.",
+  pricingSubtitle: "Pilih paket yang sesuai kebutuhan. Tanpa langganan. Tanpa biaya tersembunyi.",
   testimonialsBadge: "Kata Mereka",
   testimonialsTitleLead: "Didukung oleh ribuan",
   testimonialsTitleAccent: "siswa berprestasi",
   ctaBadge: "Slot Terbatas · Batch April 2026",
   ctaTitleLead: "Mulai perjalanan belajarmu",
   ctaTitleAccent: "hari ini",
-  ctaDescription:
-    "Gratis pre-test untuk user baru. Tidak perlu kartu kredit. Tidak ada auto-renewal.",
+  ctaDescription: "Gratis pre-test untuk user baru. Tidak perlu kartu kredit. Tidak ada auto-renewal.",
   ctaPrimaryButton: "Daftar Gratis Sekarang",
   ctaSecondaryButton: "Tonton Demo Video",
 };
@@ -133,11 +128,7 @@ export function useLandingContent() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("landing_content")
-        .select("payload")
-        .eq("id", "default")
-        .maybeSingle();
+      const { data } = await supa.from("landing_content").select("payload").eq("id", "default").maybeSingle();
       if (cancelled) return;
       const payload = (data?.payload as Partial<LandingContent>) ?? {};
       setState({ ...defaultLandingContent, ...payload });
@@ -147,11 +138,7 @@ export function useLandingContent() {
 
     const ch = supa
       .channel(`lc_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "landing_content" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "landing_content" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -163,9 +150,7 @@ export function useLandingContent() {
   const persist = (next: LandingContent) => {
     const supa = getSupabase();
     if (supa)
-      void supa
-        .from("landing_content")
-        .upsert({ id: "default", payload: next, updated_at: new Date().toISOString() });
+      void supa.from("landing_content").upsert({ id: "default", payload: next, updated_at: new Date().toISOString() });
   };
 
   const update = useCallback((patch: Partial<LandingContent>) => {

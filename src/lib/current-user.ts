@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { getSupabase } from "./supabase";
 import type { ProfileRow } from "./auth-client";
+import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.current_user";
 
@@ -36,7 +36,7 @@ const GOOGLE_SAMPLE_AVATAR =
       <rect width='128' height='128' rx='64' fill='url(#g)'/>
       <circle cx='64' cy='50' r='22' fill='white'/>
       <path d='M20 112c6-22 26-36 44-36s38 14 44 36H20z' fill='white'/>
-    </svg>`
+    </svg>`,
   );
 
 export const GOOGLE_DEMO_AVATAR = GOOGLE_SAMPLE_AVATAR;
@@ -105,11 +105,7 @@ export function useCurrentUser() {
         }
         return;
       }
-      const { data, error } = await supa
-        .from("profiles")
-        .select("*")
-        .eq("id", uid)
-        .maybeSingle();
+      const { data, error } = await supa.from("profiles").select("*").eq("id", uid).maybeSingle();
       if (cancelled) return;
       if (error || !data) {
         // Session ada tapi profile belum ada (rare) — pakai metadata dari auth
@@ -194,8 +190,6 @@ export function useCurrentUser() {
 export function setCurrentUserOnce(user: CurrentUser) {
   if (typeof window === "undefined") return;
   const prev = localStorage.getItem(KEY);
-  const merged = prev
-    ? { ...JSON.parse(prev), ...user }
-    : { ...defaultCurrentUser, ...user };
+  const merged = prev ? { ...JSON.parse(prev), ...user } : { ...defaultCurrentUser, ...user };
   localStorage.setItem(KEY, JSON.stringify(merged));
 }

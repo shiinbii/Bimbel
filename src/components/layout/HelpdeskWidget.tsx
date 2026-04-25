@@ -6,6 +6,7 @@ import {
   Avatar,
   Badge,
   Box,
+  Button,
   Chip,
   Fab,
   IconButton,
@@ -23,11 +24,7 @@ import NiHeadset from "@/icons/nexture/ni-headset";
 import NiMessage from "@/icons/nexture/ni-message";
 import NiSendRight from "@/icons/nexture/ni-send-right";
 import { useCurrentUser } from "@/lib/current-user";
-import {
-  useHelpdeskMessages,
-  useHelpdeskSessions,
-  useOnlineAdmins,
-} from "@/lib/helpdesk-store";
+import { useHelpdeskMessages, useHelpdeskSessions, useOnlineAdmins } from "@/lib/helpdesk-store";
 import { useRole } from "@/lib/role-context";
 
 export default function HelpdeskWidget() {
@@ -40,6 +37,8 @@ export default function HelpdeskWidget() {
   const onlineAdmins = useOnlineAdmins();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
 
   const isAdminRole = role === "ADMIN" || role === "SUPER_ADMIN";
   const myEmail = user.email || "guest@edudoc.id";
@@ -51,17 +50,19 @@ export default function HelpdeskWidget() {
     }
   }, [messages.length, open]);
 
-  const ensureSession = () => {
+  const ensureSession = async () => {
     if (sessionId) return sessionId;
-    const s = openOrGet(myEmail, myName);
+    const s = await openOrGet(myEmail, myName);
     setSessionId(s.id);
     return s.id;
   };
 
-  const submit = () => {
+  const submit = async () => {
     const t = text.trim();
     if (!t) return;
-    const sid = ensureSession();
+    // AWAIT session insert — supaya RLS check `exists session` di
+    // helpdesk_messages tidak race dan reject pesan pertama.
+    const sid = await ensureSession();
     send({
       sessionId: sid,
       author: "student",
@@ -170,8 +171,32 @@ export default function HelpdeskWidget() {
             </Box>
           )}
 
-          <Box ref={scrollRef} sx={{ flex: 1, overflowY: "auto", p: 1.5, display: "flex", flexDirection: "column", gap: 1, minHeight: 240 }}>
-            {messages.length === 0 ? (
+          <Box
+            ref={scrollRef}
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              p: 1.5,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              minHeight: 240,
+            }}
+          >
+            {sessionEnded ? (
+              <Box sx={{ textAlign: "center", py: 5 }}>
+                <NiCheck size="large" />
+                <Typography variant="body2" sx={{ mt: 1, color: "success.main", fontWeight: 600 }}>
+                  Sesi chat telah berakhir
+                </Typography>
+                <Typography variant="caption" className="text-text-secondary-light" sx={{ display: "block", mb: 2 }}>
+                  Riwayat tersimpan di server. Mulai sesi baru untuk chat ulang.
+                </Typography>
+                <Button variant="contained" color="primary" size="small" onClick={() => setSessionEnded(false)}>
+                  Mulai Chat Baru
+                </Button>
+              </Box>
+            ) : messages.length === 0 ? (
               <Box sx={{ textAlign: "center", py: 5 }}>
                 <NiMessage size="large" />
                 <Typography variant="body2" className="text-text-secondary" sx={{ mt: 1 }}>
@@ -185,7 +210,13 @@ export default function HelpdeskWidget() {
               messages.map((m) => {
                 const mine = m.author === "student";
                 return (
-                  <Stack key={m.id} direction="row" spacing={1} justifyContent={mine ? "flex-end" : "flex-start"} alignItems="flex-end">
+                  <Stack
+                    key={m.id}
+                    direction="row"
+                    spacing={1}
+                    justifyContent={mine ? "flex-end" : "flex-start"}
+                    alignItems="flex-end"
+                  >
                     {!mine && <Avatar sx={{ width: 26, height: 26 }}>{m.authorName.charAt(0)}</Avatar>}
                     <Box
                       sx={{
@@ -217,52 +248,86 @@ export default function HelpdeskWidget() {
           </Box>
 
           <Box sx={{ p: 1.25, borderTop: "1px solid", borderColor: "divider" }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Tulis pesan untuk admin..."
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
-                }}
-              />
-              <IconButton color="primary" onClick={submit} disabled={!text.trim()}>
-                <NiSendRight size="medium" />
-              </IconButton>
-            </Stack>
-            {sessionId && (
-              <Typography
-                variant="caption"
-                onClick={() => {
-                  closeSession(sessionId);
-                  setSessionId(null);
-                }}
+            {sessionEnded ? null : confirmClose && sessionId ? (
+              <Box
                 sx={{
-                  mt: 1,
-                  display: "block",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  color: "text.secondary",
-                  "&:hover": { color: "error.main" },
+                  px: 1.5,
+                  py: 1.25,
+                  borderRadius: 2,
+                  bgcolor: "error.light",
+                  border: "1px solid",
+                  borderColor: "error.main",
                 }}
               >
-                Tutup Sesi Chat
-              </Typography>
+                <Typography variant="body2" sx={{ mb: 1, color: "error.main", fontWeight: 600 }}>
+                  Akhiri sesi chat?
+                </Typography>
+                <Typography variant="caption" className="text-text-secondary" sx={{ display: "block", mb: 1.25 }}>
+                  Riwayat pesan akan terhapus dan kamu perlu memulai sesi baru untuk chat lagi.
+                </Typography>
+                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <Button size="tiny" variant="paper" color="grey" onClick={() => setConfirmClose(false)}>
+                    Batal
+                  </Button>
+                  <Button
+                    size="tiny"
+                    variant="contained"
+                    color="error"
+                    onClick={() => {
+                      closeSession(sessionId);
+                      setSessionId(null);
+                      setConfirmClose(false);
+                      setSessionEnded(true);
+                      setText("");
+                    }}
+                  >
+                    Ya, Akhiri
+                  </Button>
+                </Stack>
+              </Box>
+            ) : (
+              <>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Tulis pesan untuk admin..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        submit();
+                      }
+                    }}
+                  />
+                  <IconButton color="primary" onClick={submit} disabled={!text.trim()}>
+                    <NiSendRight size="medium" />
+                  </IconButton>
+                </Stack>
+                {sessionId && (
+                  <Typography
+                    variant="caption"
+                    onClick={() => setConfirmClose(true)}
+                    sx={{
+                      mt: 1,
+                      display: "block",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      color: "text.secondary",
+                      "&:hover": { color: "error.main" },
+                    }}
+                  >
+                    Tutup Sesi Chat
+                  </Typography>
+                )}
+              </>
             )}
           </Box>
         </Paper>
       </Zoom>
 
-      <Badge
-        badgeContent={!open && onlineCount > 0 ? onlineCount : 0}
-        color="success"
-        overlap="circular"
-      >
+      <Badge badgeContent={!open && onlineCount > 0 ? onlineCount : 0} color="success" overlap="circular">
         <Fab color="primary" variant="extended" onClick={() => setOpen((v) => !v)}>
           {open ? <NiMessage size="medium" /> : <NiHeadset size="medium" />}
           <Box sx={{ ml: 1 }}>Bantuan</Box>

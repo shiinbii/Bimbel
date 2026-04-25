@@ -1,17 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import ZoomCard from "./_components/zoom-card";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
-import {
-  Box,
-  Grid,
-  InputAdornment,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Grid, InputAdornment, Tab, Tabs, TextField, Typography } from "@mui/material";
 
 import TierGate from "@/components/TierGate";
 import NiCamera from "@/icons/nexture/ni-camera";
@@ -19,8 +12,6 @@ import NiSearch from "@/icons/nexture/ni-search";
 import { useWallet } from "@/lib/points-store";
 import { computeTier, useTierConfigs } from "@/lib/tier-config-store";
 import { useZoomSessions } from "@/lib/zoom-sessions-store";
-
-import ZoomCard from "./_components/zoom-card";
 
 type StatusFilter = "ALL" | "SCHEDULED" | "LIVE" | "ENDED";
 
@@ -42,19 +33,8 @@ export default function ZoomListPage() {
   const [registered, setRegistered] = useState<Set<string>>(new Set());
   const { enqueueSnackbar } = useSnackbar();
 
-  if (!currentTier.canAccessZoom) {
-    return (
-      <TierGate
-        required={firstZoomTier ?? currentTier}
-        current={currentTier}
-        feature="Sesi Zoom Live"
-        description={`Akses sesi zoom live grup tersedia mulai paket ${
-          firstZoomTier?.name ?? "—"
-        } ke atas. Top up poin untuk naik tier otomatis.`}
-      />
-    );
-  }
-
+  // Hooks harus selalu dipanggil sebelum early return — pindahkan useMemo
+  // ke atas guard `canAccessZoom` (rules-of-hooks).
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return zoomList.filter((z) => {
@@ -67,6 +47,19 @@ export default function ZoomListPage() {
       return matchStatus && matchSearch;
     });
   }, [statusFilter, search, zoomList]);
+
+  if (!currentTier.canAccessZoom) {
+    return (
+      <TierGate
+        required={firstZoomTier ?? currentTier}
+        current={currentTier}
+        feature="Sesi Zoom Live"
+        description={`Akses sesi zoom live grup tersedia mulai paket ${
+          firstZoomTier?.name ?? "—"
+        } ke atas. Top up poin untuk naik tier otomatis.`}
+      />
+    );
+  }
 
   const handleRegister = async (id: string, cost: number, title: string) => {
     await new Promise((r) => setTimeout(r, 900));

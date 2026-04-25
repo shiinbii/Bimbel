@@ -1,9 +1,11 @@
 "use client";
 
+import QuestionView from "./_components/question-view";
+import ScoreResult from "./_components/score-result";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Alert,
@@ -35,14 +37,11 @@ import NiRefresh from "@/icons/nexture/ni-refresh";
 import NiShieldCross from "@/icons/nexture/ni-shield-cross";
 import { useCurrentUser } from "@/lib/current-user";
 import { useWallet } from "@/lib/points-store";
-import { buildAttemptQuestions } from "@/lib/quiz-shuffle";
 import { recordAttempt } from "@/lib/quiz-history-store";
-import { useTestsStore, type ManagedTest } from "@/lib/tests-store";
+import { buildAttemptQuestions } from "@/lib/quiz-shuffle";
+import { type ManagedTest, useTestsStore } from "@/lib/tests-store";
 import { computeTier, useTierConfigs } from "@/lib/tier-config-store";
 import type { Question } from "@/lib/types";
-
-import QuestionView from "./_components/question-view";
-import ScoreResult from "./_components/score-result";
 
 type Stage = "intro" | "video" | "quiz" | "result";
 type OptionKey = "A" | "B" | "C" | "D";
@@ -75,10 +74,7 @@ export default function QuizAttemptPage() {
   const searchParams = useSearchParams();
   const isPreview = searchParams.get("preview") === "1";
   const { enqueueSnackbar } = useSnackbar();
-  const test = useMemo<ManagedTest | undefined>(
-    () => tests.find((t) => t.id === params.id),
-    [params.id, tests],
-  );
+  const test = useMemo<ManagedTest | undefined>(() => tests.find((t) => t.id === params.id), [params.id, tests]);
 
   const [stage, setStage] = useState<Stage>("intro");
   const [videoProgress, setVideoProgress] = useState(0);
@@ -175,15 +171,13 @@ export default function QuizAttemptPage() {
         setTabSwitches((n) => {
           const next = n + 1;
           if (next === CHEAT_WARN_THRESHOLD) {
-            enqueueSnackbar(
-              `Peringatan: kamu sudah berpindah tab ${next}× — aksi ini terdeteksi.`,
-              { variant: "warning" },
-            );
+            enqueueSnackbar(`Peringatan: kamu sudah berpindah tab ${next}× — aksi ini terdeteksi.`, {
+              variant: "warning",
+            });
           } else if (next >= CHEAT_FLAG_THRESHOLD) {
-            enqueueSnackbar(
-              `Test ditandai mencurigakan (${next}× pindah tab). Hasil akan ditinjau admin.`,
-              { variant: "error" },
-            );
+            enqueueSnackbar(`Test ditandai mencurigakan (${next}× pindah tab). Hasil akan ditinjau admin.`, {
+              variant: "error",
+            });
           }
           return next;
         });
@@ -213,10 +207,7 @@ export default function QuizAttemptPage() {
     if (!test) return;
     if (!isPreview) {
       if (test.cost > balance) {
-        enqueueSnackbar(
-          `Poin tidak cukup. Butuh ${test.cost} pts, saldo ${balance} pts.`,
-          { variant: "error" },
-        );
+        enqueueSnackbar(`Poin tidak cukup. Butuh ${test.cost} pts, saldo ${balance} pts.`, { variant: "error" });
         return;
       }
       if (test.cost > 0) {
@@ -287,12 +278,7 @@ export default function QuizAttemptPage() {
         </Alert>
       )}
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" spacing={1}>
-        <Button
-          component={Link}
-          href="/student/quiz"
-          startIcon={<NiArrowLeft size={16} />}
-          size="small"
-        >
+        <Button component={Link} href="/student/quiz" startIcon={<NiArrowLeft size={16} />} size="small">
           Daftar Quiz
         </Button>
         <Stack direction="row" spacing={1}>
@@ -320,9 +306,7 @@ export default function QuizAttemptPage() {
                 <IntroStat
                   label="Jumlah soal"
                   value={`${test.questionsPerAttempt}${
-                    test.questions.length > test.questionsPerAttempt
-                      ? ` dari ${test.questions.length}`
-                      : ""
+                    test.questions.length > test.questionsPerAttempt ? ` dari ${test.questions.length}` : ""
                   } soal`}
                 />
                 <IntroStat
@@ -349,9 +333,7 @@ export default function QuizAttemptPage() {
                     <li>
                       Batas kelulusan: <strong>{test.passingScore}</strong>.
                     </li>
-                    <li>
-                      Berpindah tab ≥ {CHEAT_FLAG_THRESHOLD}× akan menandai hasil untuk review admin.
-                    </li>
+                    <li>Berpindah tab ≥ {CHEAT_FLAG_THRESHOLD}× akan menandai hasil untuk review admin.</li>
                   </Box>
                 </CardContent>
               </Card>
@@ -366,12 +348,7 @@ export default function QuizAttemptPage() {
                 <Typography variant="body2" color="text.secondary">
                   Saldo poin kamu: <strong>{balance} pts</strong>
                 </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={start}
-                  endIcon={<NiPlay size={16} />}
-                >
+                <Button variant="contained" size="large" onClick={start} endIcon={<NiPlay size={16} />}>
                   {test.requireVideo ? "Tonton & Mulai" : "Mulai Sekarang"}
                 </Button>
               </Stack>
@@ -471,11 +448,7 @@ export default function QuizAttemptPage() {
                   <Typography variant="caption" color="text.secondary">
                     Soal {idx + 1} dari {activeQs.length}
                   </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{ mt: 0.5, height: 6, borderRadius: 1 }}
-                  />
+                  <LinearProgress variant="determinate" value={progress} sx={{ mt: 0.5, height: 6, borderRadius: 1 }} />
                 </Box>
                 <Button
                   size="small"
@@ -494,12 +467,7 @@ export default function QuizAttemptPage() {
                     sx={{ fontVariantNumeric: "tabular-nums", fontSize: "0.95rem", px: 1 }}
                   />
                 ) : (
-                  <Chip
-                    icon={<NiClock size={14} />}
-                    label="Tanpa Timer"
-                    color="success"
-                    variant="outlined"
-                  />
+                  <Chip icon={<NiClock size={14} />} label="Tanpa Timer" color="success" variant="outlined" />
                 )}
               </Stack>
 
@@ -533,12 +501,7 @@ export default function QuizAttemptPage() {
 
           <Card>
             <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-              <QuestionView
-                question={currentQ}
-                number={idx + 1}
-                selected={answers[currentQ.id]}
-                onSelect={answer}
-              />
+              <QuestionView question={currentQ} number={idx + 1} selected={answers[currentQ.id]} onSelect={answer} />
 
               <Stack
                 direction={{ xs: "column", sm: "row" }}
@@ -547,12 +510,7 @@ export default function QuizAttemptPage() {
                 spacing={2}
                 sx={{ mt: 4, pt: 3, borderTop: "1px solid", borderColor: "divider" }}
               >
-                <Button
-                  variant="outlined"
-                  onClick={prev}
-                  disabled={idx === 0}
-                  startIcon={<NiArrowLeft size={16} />}
-                >
+                <Button variant="outlined" onClick={prev} disabled={idx === 0} startIcon={<NiArrowLeft size={16} />}>
                   Sebelumnya
                 </Button>
                 <Typography variant="caption" color="text.secondary">
@@ -609,15 +567,16 @@ export default function QuizAttemptPage() {
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="body2">
-                  Soal terakhir: <strong>#{savedAttempt.idx + 1}/{savedAttempt.attemptQs.length}</strong>
+                  Soal terakhir:{" "}
+                  <strong>
+                    #{savedAttempt.idx + 1}/{savedAttempt.attemptQs.length}
+                  </strong>
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Sisa waktu: {Math.floor(savedAttempt.timeLeft / 60)}m {savedAttempt.timeLeft % 60}s
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Terjawab:{" "}
-                  {Object.values(savedAttempt.answers).filter(Boolean).length}/
-                  {savedAttempt.attemptQs.length}
+                  Terjawab: {Object.values(savedAttempt.answers).filter(Boolean).length}/{savedAttempt.attemptQs.length}
                 </Typography>
               </CardContent>
             </Card>
@@ -667,8 +626,7 @@ export default function QuizAttemptPage() {
         <DialogTitle>Keluar dari Test?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Hasil akan dihitung berdasarkan soal yang sudah dijawab. Soal yang belum
-            dijawab dihitung kosong.
+            Hasil akan dihitung berdasarkan soal yang sudah dijawab. Soal yang belum dijawab dihitung kosong.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -726,15 +684,10 @@ function ResultWithHistory(props: {
     recordedRef.current = true;
     if (isPreview) return;
     const correct = activeQs.filter((q) => answers[q.id] === q.correct).length;
-    const wrong = activeQs.filter(
-      (q) => answers[q.id] && answers[q.id] !== q.correct,
-    ).length;
+    const wrong = activeQs.filter((q) => answers[q.id] && answers[q.id] !== q.correct).length;
     const unanswered = activeQs.length - correct - wrong;
     const score = Math.round((correct / Math.max(1, activeQs.length)) * 100);
-    const duration = Math.max(
-      0,
-      Math.round((Date.now() - new Date(startedAtIso).getTime()) / 1000),
-    );
+    const duration = Math.max(0, Math.round((Date.now() - new Date(startedAtIso).getTime()) / 1000));
     recordAttempt({
       testId: test.id,
       testTitle: test.title,

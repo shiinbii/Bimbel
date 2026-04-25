@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.private_chat";
 
@@ -114,7 +114,7 @@ export function usePrivateChat(requestId: string | null) {
         (payload) => {
           const row = toMsg(payload.new as DbRow);
           setAll((prev) => (prev.some((m) => m.id === row.id) ? prev : [...prev, row]));
-        }
+        },
       )
       .subscribe();
 
@@ -125,9 +125,7 @@ export function usePrivateChat(requestId: string | null) {
   }, [requestId]);
 
   const messages = requestId
-    ? all
-        .filter((m) => m.requestId === requestId)
-        .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+    ? all.filter((m) => m.requestId === requestId).sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
     : [];
 
   const send = useCallback(
@@ -141,9 +139,7 @@ export function usePrivateChat(requestId: string | null) {
       };
       const supa = getSupabase();
       if (supa) {
-        setAll((prev) =>
-          msg.requestId === requestId ? [...prev, full] : prev
-        );
+        setAll((prev) => (msg.requestId === requestId ? [...prev, full] : prev));
         void supa.from("private_chats").insert({
           id: full.id,
           request_id: full.requestId,
@@ -162,7 +158,7 @@ export function usePrivateChat(requestId: string | null) {
       }
       return full;
     },
-    [requestId]
+    [requestId],
   );
 
   return { messages, send, loaded };

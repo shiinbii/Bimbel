@@ -8,6 +8,7 @@ import { Box, CircularProgress, Paper, Typography } from "@mui/material";
 
 import EduDocLogo from "@/components/auth/EduDocLogo";
 import { landingPathFor } from "@/config/roles";
+import { logAudit } from "@/lib/audit-store";
 import { setCurrentUserOnce } from "@/lib/current-user";
 import { useRole } from "@/lib/role-context";
 import { getSupabase } from "@/lib/supabase";
@@ -47,20 +48,12 @@ export default function AuthCallbackPage() {
       const uid = session.user.id;
       const email = session.user.email ?? "";
       const meta = session.user.user_metadata ?? {};
-      const googleName =
-        (meta.full_name as string) ||
-        (meta.name as string) ||
-        email.split("@")[0];
-      const googleAvatar =
-        (meta.avatar_url as string) || (meta.picture as string) || undefined;
+      const googleName = (meta.full_name as string) || (meta.name as string) || email.split("@")[0];
+      const googleAvatar = (meta.avatar_url as string) || (meta.picture as string) || undefined;
 
       setStatus("Memuat profil...");
 
-      let { data: profile } = await supa
-        .from("profiles")
-        .select("*")
-        .eq("id", uid)
-        .maybeSingle();
+      let { data: profile } = await supa.from("profiles").select("*").eq("id", uid).maybeSingle();
 
       if (!profile) {
         await supa.from("profiles").insert({
@@ -71,11 +64,7 @@ export default function AuthCallbackPage() {
           role: "STUDENT",
           tier: "STARTER",
         });
-        const retry = await supa
-          .from("profiles")
-          .select("*")
-          .eq("id", uid)
-          .maybeSingle();
+        const retry = await supa.from("profiles").select("*").eq("id", uid).maybeSingle();
         profile = retry.data;
       }
 
@@ -96,9 +85,7 @@ export default function AuthCallbackPage() {
       if (p.deactivated) {
         const reason = p.deactivation_reason ?? "ADMIN_ACTION";
         await supa.auth.signOut();
-        router.replace(
-          `/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`
-        );
+        router.replace(`/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`);
         return;
       }
 
@@ -109,16 +96,13 @@ export default function AuthCallbackPage() {
           variant: "info",
         });
         await new Promise((r) => setTimeout(r, 600));
-        router.replace(
-          `/register?email=${encodeURIComponent(email)}&name=${encodeURIComponent(
-            p.name
-          )}&fromGoogle=1`
-        );
+        router.replace(`/register?email=${encodeURIComponent(email)}&name=${encodeURIComponent(p.name)}&fromGoogle=1`);
         return;
       }
 
       setCurrentUserOnce({ name: p.name, email });
       setRole(p.role);
+      logAudit({ action: "USER_LOGIN", target: `via:google` });
       enqueueSnackbar(`Berhasil masuk sebagai ${p.role.replace("_", " ")}!`, {
         variant: "success",
       });

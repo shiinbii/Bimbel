@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useEffect, useState } from "react";
 
 import {
   Box,
@@ -60,8 +60,7 @@ export default function AdminCoinPricingPage() {
             Point Pricing
           </Typography>
           <Typography variant="body2" className="text-text-secondary">
-            Atur harga per coin + nominal top-up cepat. Paket Harga otomatis
-            menghitung diskon dari harga dasar ini.
+            Atur harga per coin + nominal top-up cepat. Paket Harga otomatis menghitung diskon dari harga dasar ini.
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }}>
@@ -89,8 +88,8 @@ export default function AdminCoinPricingPage() {
           <CardContent className="flex flex-col gap-2.5">
             <Typography variant="h6">Harga Dasar per Coin</Typography>
             <Typography variant="body2" className="text-text-secondary">
-              User bisa beli poin satuan dengan harga ini (tanpa paket). Paket bundle
-              akan tampil diskon relatif terhadap harga ini.
+              User bisa beli poin satuan dengan harga ini (tanpa paket). Paket bundle akan tampil diskon relatif
+              terhadap harga ini.
             </Typography>
             <TextField
               fullWidth
@@ -132,11 +131,13 @@ export default function AdminCoinPricingPage() {
               Nominal yang muncul di halaman beli poin.
             </Typography>
             <Stack spacing={1} sx={{ mt: 1 }}>
-              {(topUpsStr
-                .split(/[,\s]+/)
-                .map((s) => parseInt(s, 10))
-                .filter((n) => Number.isFinite(n) && n > 0)
-                .sort((a, b) => a - b) as number[]).map((pts) => (
+              {(
+                topUpsStr
+                  .split(/[,\s]+/)
+                  .map((s) => parseInt(s, 10))
+                  .filter((n) => Number.isFinite(n) && n > 0)
+                  .sort((a, b) => a - b) as number[]
+              ).map((pts) => (
                 <Stack
                   key={pts}
                   direction="row"
@@ -146,9 +147,7 @@ export default function AdminCoinPricingPage() {
                 >
                   <Stack direction="row" spacing={1} alignItems="center">
                     <NiCoin size="small" />
-                    <Typography variant="body2">
-                      {pts} poin
-                    </Typography>
+                    <Typography variant="body2">{pts} poin</Typography>
                   </Stack>
                   <Typography variant="subtitle2" color="warning.main">
                     {formatIDR(pts * price)}

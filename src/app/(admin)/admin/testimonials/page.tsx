@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -29,7 +29,7 @@ import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
 import NiPlus from "@/icons/nexture/ni-plus";
 import { useTestimonials } from "@/lib/testimonials-store";
 import type { Testimonial } from "@/lib/types";
-import { useUsersStore, type ManagedUser } from "@/lib/users-store";
+import { type ManagedUser, useUsersStore } from "@/lib/users-store";
 
 type TestimonialType = "STUDENT" | "TEACHER" | "ALUMNI" | "PARENT" | "OTHER";
 
@@ -42,9 +42,7 @@ const TYPE_OPTIONS: { value: TestimonialType; label: string; roleLabel: string }
 ];
 
 const Schema = Yup.object({
-  type: Yup.mixed<TestimonialType>()
-    .oneOf(["STUDENT", "TEACHER", "ALUMNI", "PARENT", "OTHER"])
-    .required(),
+  type: Yup.mixed<TestimonialType>().oneOf(["STUDENT", "TEACHER", "ALUMNI", "PARENT", "OTHER"]).required(),
   userId: Yup.string().when("type", {
     is: (v: TestimonialType) => v === "STUDENT" || v === "TEACHER",
     then: (s) => s.required("Pilih akun"),
@@ -151,7 +149,7 @@ export default function AdminTestimonialsPage() {
           onSubmit={(values, { resetForm }) => {
             const typeInfo = TYPE_OPTIONS.find((o) => o.value === values.type)!;
             let finalName = values.name.trim();
-            let finalRole = values.type === "OTHER" ? values.role.trim() : typeInfo.roleLabel;
+            const finalRole = values.type === "OTHER" ? values.role.trim() : typeInfo.roleLabel;
             let finalAvatar: string | undefined = undefined;
 
             if (values.type === "STUDENT" || values.type === "TEACHER") {
@@ -238,9 +236,7 @@ export default function AdminTestimonialsPage() {
                           />
                         )}
                         noOptionsText={
-                          userOptions.length === 0
-                            ? `Tidak ada akun ${isStudent ? "siswa" : "guru"}`
-                            : "Tidak ketemu"
+                          userOptions.length === 0 ? `Tidak ada akun ${isStudent ? "siswa" : "guru"}` : "Tidak ketemu"
                         }
                       />
                     ) : (

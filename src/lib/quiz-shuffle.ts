@@ -35,8 +35,7 @@ export function shuffleQuestionOptions(q: Question): Question {
     key: OPTION_KEYS[i] ?? "A",
     text: o.text,
   }));
-  const newCorrect =
-    newOptions.find((o) => o.text === correctOption.text)?.key ?? "A";
+  const newCorrect = newOptions.find((o) => o.text === correctOption.text)?.key ?? "A";
 
   let newOptionExplanations: Question["optionExplanations"];
   if (explByText.size > 0) {
@@ -86,7 +85,7 @@ export function buildAttemptQuestions({
 export function estimateCombinations(
   bankSize: number,
   questionsPerAttempt: number,
-  shuffleOptionsEnabled: boolean
+  shuffleOptionsEnabled: boolean,
 ): string {
   if (bankSize <= 0 || questionsPerAttempt <= 0) return "0";
   const n = Math.min(questionsPerAttempt, bankSize);

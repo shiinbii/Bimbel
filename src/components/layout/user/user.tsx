@@ -1,35 +1,27 @@
 "use client";
 
+import UserLanguageSwitch from "./user-language-switch";
+import UserModeSwitch from "./user-mode-switch";
+import UserThemeSwitch from "./user-theme-switch";
 import Link from "next/link";
-import * as React from "react";
 import { useSnackbar } from "notistack";
+import * as React from "react";
 
-import {
-  Avatar,
-  Box,
-  Card,
-  CardContent,
-  Divider,
-  Fade,
-  ListItemIcon,
-  Typography,
-} from "@mui/material";
+import { Avatar, Box, Card, CardContent, Divider, Fade, ListItemIcon, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import Popper from "@mui/material/Popper";
 
+import { ROLE_LABEL } from "@/config/roles";
 import NiPower from "@/icons/nexture/ni-power";
 import NiSettings from "@/icons/nexture/ni-settings";
 import NiUser from "@/icons/nexture/ni-user";
-import { ROLE_LABEL } from "@/config/roles";
+import { logAudit } from "@/lib/audit-store";
 import { useCurrentUser } from "@/lib/current-user";
 import { useRole } from "@/lib/role-context";
 import { cn } from "@/lib/utils";
-import UserLanguageSwitch from "./user-language-switch";
-import UserModeSwitch from "./user-mode-switch";
-import UserThemeSwitch from "./user-theme-switch";
 
 export default function User() {
   const [open, setOpen] = React.useState(false);
@@ -57,6 +49,8 @@ export default function User() {
   const handleLogout = async () => {
     if (loggingOut) return;
     setLoggingOut(true);
+    // Log SEBELUM clear() — supaya localStorage actor masih ada untuk logAudit
+    logAudit({ action: "USER_LOGOUT", target: "manual" });
     await clear();
     setRole("STUDENT");
     setOpen(false);
@@ -130,11 +124,7 @@ export default function User() {
                   <CardContent>
                     <Box className="max-w-64 sm:w-72 sm:max-w-none">
                       <Box className="mb-4 flex flex-col items-center">
-                        <Avatar
-                          alt={displayName}
-                          src={user.avatar || undefined}
-                          className="large mb-2"
-                        >
+                        <Avatar alt={displayName} src={user.avatar || undefined} className="large mb-2">
                           {firstName.charAt(0).toUpperCase()}
                         </Avatar>
                         <Typography variant="subtitle2" component="p" className="mb-1">
@@ -146,7 +136,7 @@ export default function User() {
                         <Typography
                           variant="caption"
                           component="p"
-                          className="text-primary mt-2 uppercase tracking-widest"
+                          className="text-primary mt-2 tracking-widest uppercase"
                         >
                           {ROLE_LABEL[role]}
                         </Typography>
@@ -155,21 +145,13 @@ export default function User() {
                       <Divider className="large" />
 
                       <MenuList className="p-0">
-                        <MenuItem
-                          component={Link}
-                          href="/profile"
-                          onClick={handleClose}
-                        >
+                        <MenuItem component={Link} href="/profile" onClick={handleClose}>
                           <ListItemIcon>
                             <NiUser size={20} />
                           </ListItemIcon>
                           Profil
                         </MenuItem>
-                        <MenuItem
-                          component={Link}
-                          href="/account-settings"
-                          onClick={handleClose}
-                        >
+                        <MenuItem component={Link} href="/account-settings" onClick={handleClose}>
                           <ListItemIcon>
                             <NiSettings size={20} />
                           </ListItemIcon>

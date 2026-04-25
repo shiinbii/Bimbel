@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { IDLE_COOKIE_NAME, IDLE_TIMEOUT_MS } from "@/lib/idle-config";
 
 const PUBLIC_EXACT = new Set<string>(["/"]);
@@ -15,9 +16,7 @@ const PUBLIC_PREFIXES = [
 
 function isPublic(pathname: string) {
   if (PUBLIC_EXACT.has(pathname)) return true;
-  return PUBLIC_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
+  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 export function middleware(req: NextRequest) {

@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { mockTests } from "./mock-data";
-import type { Test, Question } from "./types";
 import { getSupabase } from "./supabase";
+import type { Question, Test } from "./types";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.tests";
 
@@ -31,9 +31,7 @@ function normalize(t: Partial<ManagedTest> & Test): ManagedTest {
 }
 
 function seed(): ManagedTest[] {
-  return mockTests.map((t) =>
-    normalize({ ...(t as Test), active: true } as ManagedTest)
-  );
+  return mockTests.map((t) => normalize({ ...(t as Test), active: true } as ManagedTest));
 }
 
 type DbRow = {
@@ -101,15 +99,12 @@ function readLS(): ManagedTest[] {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed))
-      return (parsed as Partial<ManagedTest>[]).map((t) =>
-        normalize(t as Partial<ManagedTest> & Test)
-      );
+      return (parsed as Partial<ManagedTest>[]).map((t) => normalize(t as Partial<ManagedTest> & Test));
   } catch {}
   return seed();
 }
 function writeLS(list: ManagedTest[]) {
-  if (typeof window !== "undefined")
-    localStorage.setItem(KEY, JSON.stringify(list));
+  if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(list));
 }
 
 export function useTestsStore() {
@@ -130,10 +125,7 @@ export function useTestsStore() {
 
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("quiz_tests")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supa.from("quiz_tests").select("*").order("created_at", { ascending: false });
       if (cancelled) return;
       const rows = (data as DbRow[]) ?? [];
       setList(rows.length > 0 ? rows.map(toTest) : seed());
@@ -143,11 +135,7 @@ export function useTestsStore() {
 
     const ch = supa
       .channel(`qt_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "quiz_tests" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_tests" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -160,11 +148,7 @@ export function useTestsStore() {
     const supa = getSupabase();
     const n = normalize(t);
     const isNew = !readLS().some((x) => x.id === n.id);
-    setList((prev) =>
-      prev.some((x) => x.id === n.id)
-        ? prev.map((x) => (x.id === n.id ? n : x))
-        : [n, ...prev]
-    );
+    setList((prev) => (prev.some((x) => x.id === n.id) ? prev.map((x) => (x.id === n.id ? n : x)) : [n, ...prev]));
     if (supa) void supa.from("quiz_tests").upsert(toDb(n));
     else writeLS([n, ...readLS().filter((x) => x.id !== n.id)]);
     logAudit({
@@ -176,23 +160,17 @@ export function useTestsStore() {
   const toggleActive = useCallback((id: string) => {
     const supa = getSupabase();
     setList((prev) => {
-      const next = prev.map((t) =>
-        t.id === id ? { ...t, active: !t.active } : t
-      );
+      const next = prev.map((t) => (t.id === id ? { ...t, active: !t.active } : t));
       if (!supa) writeLS(next);
       return next;
     });
     logAudit({ action: "TEST_TOGGLE", target: `test:${id}` });
     if (supa) {
       void (async () => {
-        const cur = (
-          await supa.from("quiz_tests").select("active").eq("id", id).maybeSingle()
-        ).data as { active: boolean } | null;
-        if (cur)
-          await supa
-            .from("quiz_tests")
-            .update({ active: !cur.active })
-            .eq("id", id);
+        const cur = (await supa.from("quiz_tests").select("active").eq("id", id).maybeSingle()).data as {
+          active: boolean;
+        } | null;
+        if (cur) await supa.from("quiz_tests").update({ active: !cur.active }).eq("id", id);
       })();
     }
   }, []);

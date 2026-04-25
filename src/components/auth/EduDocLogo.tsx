@@ -9,8 +9,7 @@ export default function EduDocLogo({ size = "md" }: { size?: "sm" | "md" | "lg" 
         sx={{
           width: size === "lg" ? 48 : size === "sm" ? 28 : 36,
           height: size === "lg" ? 48 : size === "sm" ? 28 : 36,
-          background:
-            "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent-3)) 100%)",
+          background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent-3)) 100%)",
           color: "hsl(var(--text-contrast))",
           fontWeight: 700,
           fontSize: size === "lg" ? "1.5rem" : "1rem",

@@ -10,10 +10,7 @@ import NiDocumentVideo from "@/icons/nexture/ni-document-video";
 import NiPlay from "@/icons/nexture/ni-play";
 import type { Test } from "@/lib/types";
 
-const TYPE_META: Record<
-  Test["type"],
-  { label: string; color: "primary" | "warning" | "info" }
-> = {
+const TYPE_META: Record<Test["type"], { label: string; color: "primary" | "warning" | "info" }> = {
   PRE_TEST: { label: "Pre-Test", color: "info" },
   EXAM: { label: "Ujian", color: "primary" },
   VIDEO_QUIZ: { label: "Video Quiz", color: "warning" },
@@ -28,7 +25,7 @@ export default function QuizCard({ test }: { test: Test }) {
       className="flex h-full flex-col transition-transform hover:scale-[1.02]"
     >
       <CardContent className="flex h-full flex-col gap-2.5">
-        <Box className="flex flex-row items-center justify-between gap-2 flex-wrap">
+        <Box className="flex flex-row flex-wrap items-center justify-between gap-2">
           <Box className="flex flex-wrap gap-1">
             <Chip size="small" label={meta.label} color={meta.color} variant="outlined" />
             {test.requireVideo && (
@@ -56,10 +53,7 @@ export default function QuizCard({ test }: { test: Test }) {
         <Typography variant="body2" className="text-text-secondary-dark text-nowrap">
           {test.subject}
         </Typography>
-        <Typography
-          variant="body2"
-          className="text-text-secondary line-clamp-2"
-        >
+        <Typography variant="body2" className="text-text-secondary line-clamp-2">
           {test.description}
         </Typography>
 

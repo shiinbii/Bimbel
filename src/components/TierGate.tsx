@@ -3,17 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 
 import NiArrowLeft from "@/icons/nexture/ni-arrow-left";
 import NiCross from "@/icons/nexture/ni-cross";
@@ -59,29 +49,12 @@ export default function TierGate({
       </IconButton>
 
       <CardContent sx={{ textAlign: "center", py: 6, px: { xs: 3, md: 5 } }}>
-        <Box
-          sx={{
-            width: 64,
-            height: 64,
-            mx: "auto",
-            borderRadius: 2,
-            bgcolor: "warning.main",
-            color: "warning.contrastText",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
+        <Box sx={{ color: "warning.main", display: "inline-flex", justifyContent: "center", mb: 2 }}>
           <NiShield size={28} />
         </Box>
 
         <Box sx={{ mb: 1.5 }}>
-          <Chip
-            icon={<NiCrown size={14} />}
-            label={`Tier ${required.name}+`}
-            color="warning"
-          />
+          <Chip icon={<NiCrown size={14} />} label={`Tier ${required.name}+`} color="warning" />
         </Box>
 
         <Typography variant="h4" component="h2">
@@ -129,12 +102,7 @@ export default function TierGate({
           </Typography>
         )}
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          justifyContent="center"
-          sx={{ mt: 3 }}
-        >
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center" sx={{ mt: 3 }}>
           <Button variant="outlined" startIcon={<NiArrowLeft size={16} />} onClick={handleClose}>
             Kembali
           </Button>

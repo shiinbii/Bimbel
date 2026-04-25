@@ -1,19 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Stack,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Chip, Grid, Stack, Switch, Typography } from "@mui/material";
 
 import RequireSuperAdmin from "@/components/layout/RequireSuperAdmin";
 import NiEmail from "@/icons/nexture/ni-email";
@@ -162,9 +152,7 @@ function FeatureSettingsContent() {
           <Button
             variant="paper"
             color="grey"
-            onClick={() =>
-              setState(FLAGS.reduce((acc, f) => ({ ...acc, [f.key]: f.default }), {}))
-            }
+            onClick={() => setState(FLAGS.reduce((acc, f) => ({ ...acc, [f.key]: f.default }), {}))}
           >
             Reset Default
           </Button>

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -74,18 +73,35 @@ export default function AdminZoomSessionsPage() {
     <Grid container spacing={5}>
       <Grid container spacing={2.5} className="w-full" size={12}>
         <Grid size={{ xs: 12, md: "grow" }}>
-          <Typography variant="h1" component="h1" className="mb-0">Sesi Zoom</Typography>
-          <Typography variant="body2" className="text-text-secondary">CRUD sesi zoom — siswa daftar via student portal.</Typography>
+          <Typography variant="h1" component="h1" className="mb-0">
+            Sesi Zoom
+          </Typography>
+          <Typography variant="body2" className="text-text-secondary">
+            CRUD sesi zoom — siswa daftar via student portal.
+          </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }}>
-          <Button variant="contained" color="primary" startIcon={<NiPlus size="medium" />} onClick={() => setEditing({ ...EMPTY })}>Sesi Baru</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<NiPlus size="medium" />}
+            onClick={() => setEditing({ ...EMPTY })}
+          >
+            Sesi Baru
+          </Button>
         </Grid>
       </Grid>
 
       <Grid size={12} container spacing={2.5}>
         {list.length === 0 ? (
           <Grid size={12}>
-            <Card><CardContent sx={{ textAlign: "center", py: 5 }}><Typography variant="body2" className="text-text-secondary">Belum ada sesi.</Typography></CardContent></Card>
+            <Card>
+              <CardContent sx={{ textAlign: "center", py: 5 }}>
+                <Typography variant="body2" className="text-text-secondary">
+                  Belum ada sesi.
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
         ) : (
           list.map((s) => (
@@ -93,15 +109,39 @@ export default function AdminZoomSessionsPage() {
               <Card sx={{ height: "100%" }}>
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip size="small" label={s.status} color={STATUS_COLOR[s.status]} variant={s.status === "ENDED" ? "outlined" : "filled"} />
+                    <Chip
+                      size="small"
+                      label={s.status}
+                      color={STATUS_COLOR[s.status]}
+                      variant={s.status === "ENDED" ? "outlined" : "filled"}
+                    />
                     <Chip size="small" label={s.subject} color="primary" variant="outlined" />
                   </Stack>
                   <Typography variant="subtitle1">{s.title}</Typography>
-                  <Typography variant="caption" className="text-text-secondary-light">{formatDate(s.scheduledAt)} · {s.duration} mnt · {s.teacher}</Typography>
-                  <Typography variant="caption" className="text-text-secondary">{s.currentParticipants}/{s.maxParticipants} peserta · {s.cost} pts</Typography>
-                  <Stack direction="row" spacing={0.5} sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
-                    <Button size="tiny" variant="surface" color="grey" startIcon={<NiPen size="small" />} onClick={() => setEditing({ ...s })} fullWidth>Edit</Button>
-                    <IconButton size="small" color="error" onClick={() => setDeleteFor(s)}><NiBinEmpty size="small" /></IconButton>
+                  <Typography variant="caption" className="text-text-secondary-light">
+                    {formatDate(s.scheduledAt)} · {s.duration} mnt · {s.teacher}
+                  </Typography>
+                  <Typography variant="caption" className="text-text-secondary">
+                    {s.currentParticipants}/{s.maxParticipants} peserta · {s.cost} pts
+                  </Typography>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                  >
+                    <Button
+                      size="tiny"
+                      variant="surface"
+                      color="grey"
+                      startIcon={<NiPen size="small" />}
+                      onClick={() => setEditing({ ...s })}
+                      fullWidth
+                    >
+                      Edit
+                    </Button>
+                    <IconButton size="small" color="error" onClick={() => setDeleteFor(s)}>
+                      <NiBinEmpty size="small" />
+                    </IconButton>
                   </Stack>
                 </CardContent>
               </Card>
@@ -142,29 +182,122 @@ export default function AdminZoomSessionsPage() {
               <Form>
                 <DialogContent>
                   <Stack spacing={2}>
-                    <TextField fullWidth label="Judul" name="title" value={values.title ?? ""} onChange={handleChange} onBlur={handleBlur} error={touched.title && !!errors.title} helperText={touched.title && errors.title} />
+                    <TextField
+                      fullWidth
+                      label="Judul"
+                      name="title"
+                      value={values.title ?? ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.title && !!errors.title}
+                      helperText={touched.title && errors.title}
+                    />
                     <Grid container spacing={2}>
-                      <Grid size={6}><TextField fullWidth label="Mata Pelajaran" name="subject" value={values.subject ?? ""} onChange={handleChange} onBlur={handleBlur} error={touched.subject && !!errors.subject} /></Grid>
-                      <Grid size={6}><TextField fullWidth label="Nama Guru" name="teacher" value={values.teacher ?? ""} onChange={handleChange} onBlur={handleBlur} error={touched.teacher && !!errors.teacher} /></Grid>
+                      <Grid size={6}>
+                        <TextField
+                          fullWidth
+                          label="Mata Pelajaran"
+                          name="subject"
+                          value={values.subject ?? ""}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.subject && !!errors.subject}
+                        />
+                      </Grid>
+                      <Grid size={6}>
+                        <TextField
+                          fullWidth
+                          label="Nama Guru"
+                          name="teacher"
+                          value={values.teacher ?? ""}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.teacher && !!errors.teacher}
+                        />
+                      </Grid>
                     </Grid>
-                    <TextField fullWidth label="Jadwal (ISO)" name="scheduledAt" value={values.scheduledAt ?? ""} onChange={handleChange} placeholder="2026-04-25T19:00:00Z" helperText="Format ISO 8601" />
+                    <TextField
+                      fullWidth
+                      label="Jadwal (ISO)"
+                      name="scheduledAt"
+                      value={values.scheduledAt ?? ""}
+                      onChange={handleChange}
+                      placeholder="2026-04-25T19:00:00Z"
+                      helperText="Format ISO 8601"
+                    />
                     <Grid container spacing={2}>
-                      <Grid size={4}><TextField fullWidth type="number" label="Durasi (mnt)" name="duration" value={values.duration ?? 60} onChange={handleChange} /></Grid>
-                      <Grid size={4}><TextField fullWidth type="number" label="Biaya (pts)" name="cost" value={values.cost ?? 0} onChange={handleChange} /></Grid>
-                      <Grid size={4}><TextField fullWidth type="number" label="Max Peserta" name="maxParticipants" value={values.maxParticipants ?? 30} onChange={handleChange} /></Grid>
+                      <Grid size={4}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Durasi (mnt)"
+                          name="duration"
+                          value={values.duration ?? 60}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid size={4}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Biaya (pts)"
+                          name="cost"
+                          value={values.cost ?? 0}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid size={4}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Max Peserta"
+                          name="maxParticipants"
+                          value={values.maxParticipants ?? 30}
+                          onChange={handleChange}
+                        />
+                      </Grid>
                     </Grid>
-                    <TextField fullWidth select label="Status" name="status" value={values.status ?? "SCHEDULED"} onChange={handleChange}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Status"
+                      name="status"
+                      value={values.status ?? "SCHEDULED"}
+                      onChange={handleChange}
+                    >
                       <MenuItem value="SCHEDULED">SCHEDULED</MenuItem>
                       <MenuItem value="LIVE">LIVE</MenuItem>
                       <MenuItem value="ENDED">ENDED</MenuItem>
                     </TextField>
-                    <TextField fullWidth label="Meeting URL" name="meetingUrl" value={values.meetingUrl ?? ""} onChange={handleChange} onBlur={handleBlur} error={touched.meetingUrl && !!errors.meetingUrl} />
-                    <TextField fullWidth multiline minRows={2} label="Deskripsi" name="description" value={values.description ?? ""} onChange={handleChange} onBlur={handleBlur} error={touched.description && !!errors.description} />
+                    <TextField
+                      fullWidth
+                      label="Meeting URL"
+                      name="meetingUrl"
+                      value={values.meetingUrl ?? ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.meetingUrl && !!errors.meetingUrl}
+                    />
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Deskripsi"
+                      name="description"
+                      value={values.description ?? ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.description && !!errors.description}
+                    />
                   </Stack>
                 </DialogContent>
                 <DialogActions>
-                  <Button variant="paper" color="grey" onClick={() => setEditing(null)}>Batal</Button>
-                  <Button variant="contained" color="primary" onClick={submitForm}>Simpan</Button>
+                  <Button variant="paper" color="grey" onClick={() => setEditing(null)}>
+                    Batal
+                  </Button>
+                  <Button variant="contained" color="primary" onClick={submitForm}>
+                    Simpan
+                  </Button>
                 </DialogActions>
               </Form>
             )}
@@ -174,10 +307,28 @@ export default function AdminZoomSessionsPage() {
 
       <Dialog open={!!deleteFor} onClose={() => setDeleteFor(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Hapus Sesi?</DialogTitle>
-        <DialogContent><Typography variant="body2"><strong>{deleteFor?.title}</strong> akan dihapus.</Typography></DialogContent>
+        <DialogContent>
+          <Typography variant="body2">
+            <strong>{deleteFor?.title}</strong> akan dihapus.
+          </Typography>
+        </DialogContent>
         <DialogActions>
-          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>Batal</Button>
-          <Button variant="contained" color="error" onClick={() => { if (deleteFor) { remove(deleteFor.id); enqueueSnackbar("Dihapus", { variant: "success" }); setDeleteFor(null); } }}>Ya, Hapus</Button>
+          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>
+            Batal
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (deleteFor) {
+                remove(deleteFor.id);
+                enqueueSnackbar("Dihapus", { variant: "success" });
+                setDeleteFor(null);
+              }
+            }}
+          >
+            Ya, Hapus
+          </Button>
         </DialogActions>
       </Dialog>
     </Grid>

@@ -27,6 +27,8 @@ export interface PointPackage {
   bonus?: number;
   popular?: boolean;
   description: string;
+  /** Diisi kalau pkg ini sebenarnya tier purchase (Basic/Popular/Premium). */
+  tierId?: string;
 }
 
 export type OptionKey = "A" | "B" | "C" | "D";
@@ -76,6 +78,7 @@ export interface ZoomSession {
 export interface Transaction {
   id: string;
   user: string;
+  userEmail?: string | null;
   package: string;
   amount: number;
   points: number;

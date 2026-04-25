@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useSnackbar } from "notistack";
+import { useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -25,7 +25,7 @@ import NiSendRight from "@/icons/nexture/ni-send-right";
 import NiStars from "@/icons/nexture/ni-stars";
 import { useWallet } from "@/lib/points-store";
 import { getSupabase } from "@/lib/supabase";
-import { useUsersStore, type ManagedUser } from "@/lib/users-store";
+import { type ManagedUser, useUsersStore } from "@/lib/users-store";
 
 const GrantSchema = Yup.object().shape({
   userId: Yup.string().required("Pilih user"),
@@ -43,10 +43,7 @@ export default function AdminPointsPage() {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const users = useMemo(
-    () => allUsers.filter((u) => u.role === "STUDENT" || u.role === "TEACHER"),
-    [allUsers],
-  );
+  const users = useMemo(() => allUsers.filter((u) => u.role === "STUDENT" || u.role === "TEACHER"), [allUsers]);
 
   // Fetch live balance whenever selected user changes (or after a grant).
   useEffect(() => {
@@ -126,9 +123,7 @@ export default function AdminPointsPage() {
                       <Typography variant="overline">Saldo saat ini</Typography>
                     </Stack>
                     <Typography variant="h3" component="p">
-                      {balanceLoading
-                        ? "..."
-                        : (liveBalance ?? selectedUser.points ?? 0).toLocaleString("id-ID")}
+                      {balanceLoading ? "..." : (liveBalance ?? selectedUser.points ?? 0).toLocaleString("id-ID")}
                     </Typography>
                     <Typography variant="caption" className="text-text-secondary-light">
                       Default validity: {settings.defaultValidityDays} hari
@@ -169,13 +164,7 @@ export default function AdminPointsPage() {
                 setSubmitting(false);
                 return;
               }
-              const res = await grantTo(
-                user.id,
-                values.amount,
-                values.validityDays,
-                "ADMIN_GRANT",
-                values.note,
-              );
+              const res = await grantTo(user.id, values.amount, values.validityDays, "ADMIN_GRANT", values.note);
               if (!res.ok) {
                 enqueueSnackbar(res.error ?? "Gagal kirim poin", { variant: "error" });
                 setSubmitting(false);

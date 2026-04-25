@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
 import {
   Avatar,
-  Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -27,8 +25,8 @@ import {
 import RequireSuperAdmin from "@/components/layout/RequireSuperAdmin";
 import NiSearch from "@/icons/nexture/ni-search";
 import NiShieldCheck from "@/icons/nexture/ni-shield-check";
-import { useUsersStore } from "@/lib/users-store";
 import type { Role } from "@/lib/types";
+import { useUsersStore } from "@/lib/users-store";
 
 const ROLE_COLOR: Record<Role, "default" | "primary" | "info" | "warning"> = {
   STUDENT: "info",
@@ -157,11 +155,7 @@ function ManagementContent() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            size="small"
-                            label={u.role.replace("_", " ")}
-                            color={ROLE_COLOR[u.role]}
-                          />
+                          <Chip size="small" label={u.role.replace("_", " ")} color={ROLE_COLOR[u.role]} />
                         </TableCell>
                         <TableCell>
                           <TextField

@@ -1,20 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Role } from "./types";
 import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
+import type { Role } from "./types";
+import { useCallback, useEffect, useState } from "react";
 
-export type DeactivationReason =
-  | "INACTIVITY_3_MONTHS"
-  | "ZERO_CREDIT"
-  | "ADMIN_ACTION"
-  | null;
+export type DeactivationReason = "INACTIVITY_3_MONTHS" | "ZERO_CREDIT" | "ADMIN_ACTION" | null;
 
-export const DEACTIVATION_MESSAGES: Record<
-  Exclude<DeactivationReason, null>,
-  { title: string; body: string }
-> = {
+export const DEACTIVATION_MESSAGES: Record<Exclude<DeactivationReason, null>, { title: string; body: string }> = {
   INACTIVITY_3_MONTHS: {
     title: "Akun Tidak Aktif",
     body: "Akun kamu dinonaktifkan karena tidak login lebih dari 3 bulan. Silakan hubungi admin untuk mengaktifkan kembali.",
@@ -127,8 +120,7 @@ export function updateUserByEmail(email: string, patch: Partial<ManagedUser>) {
     if (patch.phone !== undefined) dbPatch.phone = patch.phone ?? null;
     if (patch.avatar !== undefined) dbPatch.avatar_url = patch.avatar ?? null;
     if (patch.deactivated !== undefined) dbPatch.deactivated = patch.deactivated;
-    if (patch.deactivationReason !== undefined)
-      dbPatch.deactivation_reason = patch.deactivationReason;
+    if (patch.deactivationReason !== undefined) dbPatch.deactivation_reason = patch.deactivationReason;
     if (patch.deactivatedAt !== undefined) dbPatch.deactivated_at = patch.deactivatedAt;
     if (patch.lastLoginAt !== undefined) dbPatch.last_login_at = patch.lastLoginAt;
     if (patch.role !== undefined) dbPatch.role = patch.role;
@@ -152,12 +144,7 @@ export function updateUserByEmail(email: string, patch: Partial<ManagedUser>) {
 
 export function maybeReactivateOnCredit(email: string, balance: number) {
   const u = findUserByEmail(email);
-  if (
-    u &&
-    u.deactivated &&
-    u.deactivationReason === "ZERO_CREDIT" &&
-    balance > 0
-  ) {
+  if (u && u.deactivated && u.deactivationReason === "ZERO_CREDIT" && balance > 0) {
     updateUserByEmail(email, {
       deactivated: false,
       deactivationReason: null,
@@ -191,11 +178,7 @@ export function useUsersStore() {
 
     const ch = supa
       .channel(`usr_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -251,7 +234,7 @@ export function useUsersStore() {
         status: deactivated ? "INACTIVE" : "ACTIVE",
       });
     },
-    []
+    [],
   );
 
   const remove = useCallback((id: string) => {

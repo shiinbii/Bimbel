@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.credit_packages";
 
@@ -94,22 +94,14 @@ export function useCreditPackages() {
         .eq("active", true)
         .order("order", { ascending: true });
       if (cancelled) return;
-      setList(
-        data && data.length
-          ? (data as DbRow[]).map(toPkg)
-          : DEFAULT_CREDIT_PACKAGES
-      );
+      setList(data && data.length ? (data as DbRow[]).map(toPkg) : DEFAULT_CREDIT_PACKAGES);
       setLoaded(true);
     };
     refresh();
 
     const ch = supa
       .channel(`cp_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "credit_packages" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "credit_packages" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -123,10 +115,9 @@ export function useCreditPackages() {
     const existing = readLS().some((x) => x.id === p.id);
     const isNew = !existing;
     setList((prev) =>
-      (prev.some((x) => x.id === p.id)
-        ? prev.map((x) => (x.id === p.id ? p : x))
-        : [...prev, p]
-      ).sort((a, b) => a.order - b.order)
+      (prev.some((x) => x.id === p.id) ? prev.map((x) => (x.id === p.id ? p : x)) : [...prev, p]).sort(
+        (a, b) => a.order - b.order,
+      ),
     );
     if (supa) {
       void supa
@@ -136,9 +127,8 @@ export function useCreditPackages() {
           if (error) console.warn("[packages] upsert error:", error.message);
         });
     } else {
-      const next = (readLS().some((x) => x.id === p.id)
-        ? readLS().map((x) => (x.id === p.id ? p : x))
-        : [...readLS(), p]
+      const next = (
+        readLS().some((x) => x.id === p.id) ? readLS().map((x) => (x.id === p.id ? p : x)) : [...readLS(), p]
       ).sort((a, b) => a.order - b.order);
       writeLS(next);
     }
@@ -150,9 +140,7 @@ export function useCreditPackages() {
 
   const remove = useCallback((id: string) => {
     const supa = getSupabase();
-    setList((prev) =>
-      prev.filter((p) => p.id !== id).map((p, i) => ({ ...p, order: i + 1 }))
-    );
+    setList((prev) => prev.filter((p) => p.id !== id).map((p, i) => ({ ...p, order: i + 1 })));
     if (supa) {
       void supa
         .from("credit_packages")

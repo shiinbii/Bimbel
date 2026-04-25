@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.tier_configs";
 
@@ -17,6 +17,12 @@ export interface TierConfig {
   description: string;
   highlights: string[];
   badgeTone: TierBadgeTone;
+  /** Harga tier (Rp). 0 = gratis (Starter auto-assigned). */
+  price: number;
+  /** Harga promo opsional. Kalau diisi & < price → tampil coret-coret. */
+  discountPrice?: number;
+  /** Poin yang langsung user dapat saat beli tier ini (sekali). */
+  bonusPoints: number;
 }
 
 export const DEFAULT_TIERS: TierConfig[] = [
@@ -28,12 +34,10 @@ export const DEFAULT_TIERS: TierConfig[] = [
     canAccessZoom: false,
     canRequestPrivateZoom: false,
     description: "Akses dasar — soal & pre-test gratis.",
-    highlights: [
-      "Maksimal 10 quiz aktif",
-      "Tidak termasuk sesi zoom live",
-      "Cocok untuk mencoba platform",
-    ],
+    highlights: ["Maksimal 10 quiz aktif", "Tidak termasuk sesi zoom live", "Cocok untuk mencoba platform"],
     badgeTone: "neutral",
+    price: 0,
+    bonusPoints: 0,
   },
   {
     id: "tier_b",
@@ -43,12 +47,10 @@ export const DEFAULT_TIERS: TierConfig[] = [
     canAccessZoom: false,
     canRequestPrivateZoom: false,
     description: "Akses soal lebih banyak.",
-    highlights: [
-      "Maksimal 30 quiz aktif",
-      "Pembahasan lengkap per soal",
-      "Tidak termasuk sesi zoom live",
-    ],
+    highlights: ["Maksimal 30 quiz aktif", "Pembahasan lengkap per soal", "Tidak termasuk sesi zoom live"],
     badgeTone: "info",
+    price: 50_000,
+    bonusPoints: 250,
   },
   {
     id: "tier_c",
@@ -58,12 +60,10 @@ export const DEFAULT_TIERS: TierConfig[] = [
     canAccessZoom: true,
     canRequestPrivateZoom: false,
     description: "Akses soal + sesi zoom live grup.",
-    highlights: [
-      "Maksimal 80 quiz aktif",
-      "Akses sesi zoom live grup",
-      "Prioritas waiting room",
-    ],
+    highlights: ["Maksimal 80 quiz aktif", "Akses sesi zoom live grup", "Prioritas waiting room"],
     badgeTone: "primary",
+    price: 150_000,
+    bonusPoints: 600,
   },
   {
     id: "tier_d",
@@ -80,6 +80,8 @@ export const DEFAULT_TIERS: TierConfig[] = [
       "Notifikasi WA & email",
     ],
     badgeTone: "gold",
+    price: 350_000,
+    bonusPoints: 1200,
   },
 ];
 
@@ -93,6 +95,9 @@ type DbRow = {
   description: string;
   highlights: string[];
   badge_tone: TierBadgeTone;
+  price: number | null;
+  discount_price: number | null;
+  bonus_points: number | null;
 };
 
 const toConfig = (r: DbRow): TierConfig => ({
@@ -105,6 +110,9 @@ const toConfig = (r: DbRow): TierConfig => ({
   description: r.description,
   highlights: Array.isArray(r.highlights) ? r.highlights : [],
   badgeTone: r.badge_tone,
+  price: r.price ?? 0,
+  discountPrice: r.discount_price ?? undefined,
+  bonusPoints: r.bonus_points ?? 0,
 });
 
 const toDbPatch = (c: TierConfig) => ({
@@ -117,6 +125,9 @@ const toDbPatch = (c: TierConfig) => ({
   description: c.description,
   highlights: c.highlights,
   badge_tone: c.badgeTone,
+  price: c.price,
+  discount_price: c.discountPrice ?? null,
+  bonus_points: c.bonusPoints,
 });
 
 function readLS(): TierConfig[] {
@@ -126,9 +137,7 @@ function readLS(): TierConfig[] {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0)
-      return (parsed as TierConfig[])
-        .slice()
-        .sort((a, b) => a.minPoints - b.minPoints);
+      return (parsed as TierConfig[]).slice().sort((a, b) => a.minPoints - b.minPoints);
   } catch {}
   return DEFAULT_TIERS;
 }
@@ -142,10 +151,7 @@ function writeLS(list: TierConfig[]) {
   });
 }
 
-export function computeTier(
-  points: number,
-  tiers: TierConfig[] = DEFAULT_TIERS
-): TierConfig {
+export function computeTier(points: number, tiers: TierConfig[] = DEFAULT_TIERS): TierConfig {
   if (tiers.length === 0) return DEFAULT_TIERS[0];
   const sorted = tiers.slice().sort((a, b) => a.minPoints - b.minPoints);
   let cur = sorted[0];
@@ -155,10 +161,7 @@ export function computeTier(
   return cur;
 }
 
-export function nextTier(
-  current: TierConfig,
-  tiers: TierConfig[]
-): TierConfig | null {
+export function nextTier(current: TierConfig, tiers: TierConfig[]): TierConfig | null {
   const sorted = tiers.slice().sort((a, b) => a.minPoints - b.minPoints);
   const idx = sorted.findIndex((t) => t.id === current.id);
   if (idx === -1 || idx === sorted.length - 1) return null;
@@ -183,10 +186,7 @@ export function useTierConfigs() {
 
     let cancelled = false;
     (async () => {
-      const { data, error } = await supa
-        .from("tier_configs")
-        .select("*")
-        .order("min_points", { ascending: true });
+      const { data, error } = await supa.from("tier_configs").select("*").order("min_points", { ascending: true });
       if (cancelled) return;
       if (error || !data || data.length === 0) {
         setList(DEFAULT_TIERS);
@@ -198,17 +198,10 @@ export function useTierConfigs() {
 
     const ch = supa
       .channel(`tier_configs_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tier_configs" },
-        async () => {
-          const { data } = await supa
-            .from("tier_configs")
-            .select("*")
-            .order("min_points", { ascending: true });
-          if (!cancelled && data) setList((data as DbRow[]).map(toConfig));
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "tier_configs" }, async () => {
+        const { data } = await supa.from("tier_configs").select("*").order("min_points", { ascending: true });
+        if (!cancelled && data) setList((data as DbRow[]).map(toConfig));
+      })
       .subscribe();
 
     return () => {
@@ -222,10 +215,7 @@ export function useTierConfigs() {
     if (!supa) {
       setList((prev) => {
         const exists = prev.some((x) => x.id === t.id);
-        const next = (exists
-          ? prev.map((x) => (x.id === t.id ? t : x))
-          : [...prev, t]
-        )
+        const next = (exists ? prev.map((x) => (x.id === t.id ? t : x)) : [...prev, t])
           .slice()
           .sort((a, b) => a.minPoints - b.minPoints);
         writeLS(next);
@@ -236,10 +226,7 @@ export function useTierConfigs() {
     // optimistic
     setList((prev) => {
       const exists = prev.some((x) => x.id === t.id);
-      return (exists
-        ? prev.map((x) => (x.id === t.id ? t : x))
-        : [...prev, t]
-      )
+      return (exists ? prev.map((x) => (x.id === t.id ? t : x)) : [...prev, t])
         .slice()
         .sort((a, b) => a.minPoints - b.minPoints);
     });

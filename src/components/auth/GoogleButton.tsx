@@ -33,13 +33,7 @@ export default function GoogleButton({
   disabled?: boolean;
 }) {
   return (
-    <Button
-      variant="outlined"
-      color="grey"
-      fullWidth
-      onClick={onClick}
-      disabled={disabled}
-    >
+    <Button variant="outlined" color="grey" fullWidth onClick={onClick} disabled={disabled}>
       <Box className="me-2 flex items-center">
         <GoogleIcon />
       </Box>

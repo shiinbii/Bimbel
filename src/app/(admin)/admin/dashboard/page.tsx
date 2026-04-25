@@ -1,56 +1,126 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import { LineChart } from "@mui/x-charts";
 
+import { ROLE_LABEL } from "@/config/roles";
 import NiCamera from "@/icons/nexture/ni-camera";
 import NiCoin from "@/icons/nexture/ni-coin";
 import NiHeadset from "@/icons/nexture/ni-headset";
 import NiUsers from "@/icons/nexture/ni-users";
 import NiWallet from "@/icons/nexture/ni-wallet";
-import { ROLE_LABEL } from "@/config/roles";
 import { useCurrentUser } from "@/lib/current-user";
 import { formatIDR } from "@/lib/format";
-import { mockStudents, mockTeachers } from "@/lib/mock-data";
+import { useHelpdeskSessions } from "@/lib/helpdesk-store";
 import { useRole } from "@/lib/role-context";
+import { useTransactions } from "@/lib/transactions-store";
+import { useUsersStore } from "@/lib/users-store";
 import { useZoomSessions } from "@/lib/zoom-sessions-store";
 
-const REVENUE_MONTHS = ["Okt", "Nov", "Des", "Jan", "Feb", "Mar", "Apr"];
-const REVENUE_DATA = [94, 112, 128, 142, 156, 178, 210];
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+
+function isSameDay(iso: string, ref: Date): boolean {
+  const d = new Date(iso);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+}
+
+function isSameMonth(iso: string, ref: Date): boolean {
+  const d = new Date(iso);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+}
 
 export default function AdminDashboardPage() {
   const { user } = useCurrentUser();
   const { role } = useRole();
+  const { list: users } = useUsersStore();
+  const { list: transactions } = useTransactions();
   const { list: zoomList } = useZoomSessions();
+  const { sessions: helpdeskSessions } = useHelpdeskSessions();
+
   const firstName = (user.name || "Admin").split(" ")[0];
-  const liveCount = zoomList.filter((z) => z.status === "LIVE").length;
-  const totalUsers = mockStudents.length + mockTeachers.length + 1420;
-  const totalMonth = 1250;
+
+  const metrics = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const joinedThisMonth = users.filter((u) => u.joinedAt && new Date(u.joinedAt) >= startOfMonth).length;
+
+    const txToday = transactions.filter((t) => isSameDay(t.createdAt, now));
+    const txTodaySuccess = txToday.filter((t) => t.status === "SUCCESS").length;
+    const txTodayPending = txToday.filter((t) => t.status === "PENDING").length;
+
+    const txMonth = transactions.filter((t) => t.status === "SUCCESS" && isSameMonth(t.createdAt, now));
+    const revenueMonth = txMonth.reduce((acc, t) => acc + (t.amount || 0), 0);
+
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const txPrevMonth = transactions.filter((t) => t.status === "SUCCESS" && isSameMonth(t.createdAt, prevMonth));
+    const revenuePrevMonth = txPrevMonth.reduce((acc, t) => acc + (t.amount || 0), 0);
+    const momPercent =
+      revenuePrevMonth > 0 ? Math.round(((revenueMonth - revenuePrevMonth) / revenuePrevMonth) * 100) : null;
+
+    const liveCount = zoomList.filter((z) => z.status === "LIVE").length;
+    const activeSessions = zoomList.filter((z) => z.status !== "ENDED").length;
+
+    const pendingHelpdesk = helpdeskSessions.filter((s) => s.status !== "CLOSED").length;
+
+    return {
+      totalUsers: users.length,
+      joinedThisMonth,
+      txTodayCount: txToday.length,
+      txTodaySuccess,
+      txTodayPending,
+      revenueMonth,
+      momPercent,
+      liveCount,
+      activeSessions,
+      pendingHelpdesk,
+    };
+  }, [users, transactions, zoomList, helpdeskSessions]);
+
+  const revenueSeries = useMemo(() => {
+    const now = new Date();
+    const points: { label: string; value: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const total = transactions
+        .filter((t) => t.status === "SUCCESS" && isSameMonth(t.createdAt, d))
+        .reduce((acc, t) => acc + (t.amount || 0), 0);
+      points.push({
+        label: MONTH_SHORT[d.getMonth()],
+        value: Math.round(total / 1_000_000),
+      });
+    }
+    return points;
+  }, [transactions]);
 
   const stats = [
     {
       icon: <NiUsers size="medium" />,
       label: "Total User",
-      value: totalUsers.toLocaleString("id-ID"),
-      trend: "+248 bulan ini",
+      value: metrics.totalUsers.toLocaleString("id-ID"),
+      trend: metrics.joinedThisMonth > 0 ? `+${metrics.joinedThisMonth} bulan ini` : "Belum ada user baru bulan ini",
     },
     {
       icon: <NiCoin size="medium" />,
       label: "Transaksi Hari Ini",
-      value: "42",
-      trend: "24 sukses · 6 pending",
+      value: String(metrics.txTodayCount),
+      trend:
+        metrics.txTodayCount === 0
+          ? "Belum ada transaksi"
+          : `${metrics.txTodaySuccess} sukses · ${metrics.txTodayPending} pending`,
     },
     {
       icon: <NiWallet size="medium" />,
       label: "Revenue Bulan",
-      value: formatIDR(totalMonth * 100_000),
-      trend: "+18% MoM",
+      value: formatIDR(metrics.revenueMonth),
+      trend: metrics.momPercent === null ? "—" : `${metrics.momPercent >= 0 ? "+" : ""}${metrics.momPercent}% MoM`,
     },
     {
       icon: <NiCamera size="medium" />,
       label: "Sesi Aktif",
-      value: String(liveCount + 12),
-      trend: `${liveCount} live sekarang`,
+      value: String(metrics.activeSessions),
+      trend: `${metrics.liveCount} live sekarang`,
     },
   ];
 
@@ -83,7 +153,7 @@ export default function AdminDashboardPage() {
                       </Typography>
                       <Box className="text-primary">{s.icon}</Box>
                     </Box>
-                    <Box className="flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0 mt-1">
+                    <Box className="mt-1 flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0">
                       <Typography variant="h5" className="text-text-primary">
                         {s.value}
                       </Typography>
@@ -110,12 +180,12 @@ export default function AdminDashboardPage() {
                 height={300}
                 series={[
                   {
-                    data: REVENUE_DATA,
+                    data: revenueSeries.map((p) => p.value),
                     label: "Revenue (juta Rp)",
                     area: true,
                   },
                 ]}
-                xAxis={[{ scaleType: "band", data: REVENUE_MONTHS }]}
+                xAxis={[{ scaleType: "band", data: revenueSeries.map((p) => p.label) }]}
                 margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
                 grid={{ horizontal: true }}
               />
@@ -128,22 +198,31 @@ export default function AdminDashboardPage() {
           </Typography>
           <Card sx={{ height: "100%" }}>
             <CardContent className="flex flex-col gap-2">
-              <Box className="flex items-center gap-2 text-warning">
+              <Box className="text-warning flex items-center gap-2">
                 <NiHeadset size="medium" />
                 <Typography variant="overline">Perlu Respon</Typography>
               </Box>
               <Typography variant="h3" component="p">
-                7
+                {metrics.pendingHelpdesk}
               </Typography>
               <Typography variant="body2" className="text-text-secondary">
-                Rata-rata response time: <strong>3 menit</strong>
+                {metrics.pendingHelpdesk === 0
+                  ? "Semua sesi beres — tidak ada antrian."
+                  : `${metrics.pendingHelpdesk} sesi menunggu respon admin.`}
               </Typography>
               <Box sx={{ mt: 2, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
                 <Typography variant="caption" className="text-text-secondary-dark">
-                  SLA bulan ini
+                  Total sesi bulan ini
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  96% request terjawab dalam &lt;5 menit
+                  {
+                    helpdeskSessions.filter((s) => {
+                      const d = new Date(s.createdAt);
+                      const now = new Date();
+                      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+                    }).length
+                  }{" "}
+                  sesi
                 </Typography>
               </Box>
             </CardContent>

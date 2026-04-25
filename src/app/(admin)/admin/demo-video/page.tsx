@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 
 import { Box, Button, Card, CardContent, Grid, Stack, TextField, Typography } from "@mui/material";
 
@@ -23,7 +23,9 @@ export default function AdminDemoVideoPage() {
     <Grid container spacing={5}>
       <Grid container spacing={2.5} className="w-full" size={12}>
         <Grid size={{ xs: 12, md: "grow" }}>
-          <Typography variant="h1" component="h1" className="mb-0">Video Demo</Typography>
+          <Typography variant="h1" component="h1" className="mb-0">
+            Video Demo
+          </Typography>
           <Typography variant="body2" className="text-text-secondary">
             URL video YouTube yang tampil di landing page / onboarding.
           </Typography>
@@ -32,7 +34,9 @@ export default function AdminDemoVideoPage() {
 
       <Grid size={12} container spacing={2.5}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Typography variant="h6" component="h6" className="mt-2 mb-3">Setting URL</Typography>
+          <Typography variant="h6" component="h6" className="mt-2 mb-3">
+            Setting URL
+          </Typography>
           <Card>
             <CardContent className="flex flex-col gap-2.5">
               <TextField
@@ -65,7 +69,9 @@ export default function AdminDemoVideoPage() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Typography variant="h6" component="h6" className="mt-2 mb-3">Preview</Typography>
+          <Typography variant="h6" component="h6" className="mt-2 mb-3">
+            Preview
+          </Typography>
           <Card>
             <CardContent>
               {embed ? (

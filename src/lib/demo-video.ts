@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { logAudit } from "./audit-store";
 import { getSupabase } from "./supabase";
+import { useEffect, useState } from "react";
 
 export const DEFAULT_DEMO_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
@@ -37,11 +37,7 @@ export function useDemoVideoUrl() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await supa
-        .from("demo_video")
-        .select("url")
-        .eq("id", "default")
-        .maybeSingle();
+      const { data } = await supa.from("demo_video").select("url").eq("id", "default").maybeSingle();
       if (cancelled) return;
       setUrlState((data?.url as string) || DEFAULT_DEMO_VIDEO_URL);
       setLoaded(true);
@@ -50,11 +46,7 @@ export function useDemoVideoUrl() {
 
     const ch = supa
       .channel(`dv_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "demo_video" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "demo_video" }, () => refresh())
       .subscribe();
 
     return () => {

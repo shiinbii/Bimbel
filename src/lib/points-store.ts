@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { logAudit } from "./audit-store";
 import { mockUser } from "./mock-data";
-import { maybeReactivateOnCredit, updateUserByEmail } from "./users-store";
 import { getSupabase } from "./supabase";
+import { maybeReactivateOnCredit, updateUserByEmail } from "./users-store";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const GRANTS_KEY = "edudoc.point_grants";
 const SETTINGS_KEY = "edudoc.point_settings";
@@ -80,8 +80,7 @@ function readGrantsLS(): PointGrant[] {
 }
 
 function writeGrantsLS(list: PointGrant[]) {
-  if (typeof window !== "undefined")
-    localStorage.setItem(GRANTS_KEY, JSON.stringify(list));
+  if (typeof window !== "undefined") localStorage.setItem(GRANTS_KEY, JSON.stringify(list));
 }
 
 function readHistoryLS(): PointHistoryEntry[] {
@@ -96,8 +95,7 @@ function readHistoryLS(): PointHistoryEntry[] {
 }
 
 function writeHistoryLS(list: PointHistoryEntry[]) {
-  if (typeof window !== "undefined")
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 200)));
+  if (typeof window !== "undefined") localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 200)));
 }
 
 function readSettings(): PointSettings {
@@ -112,8 +110,7 @@ function readSettings(): PointSettings {
 }
 
 function writeSettings(s: PointSettings) {
-  if (typeof window !== "undefined")
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  if (typeof window !== "undefined") localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
 }
 
 function applyExpiryLS(grants: PointGrant[]): {
@@ -211,17 +208,8 @@ export function useWallet() {
 
     const hydrate = async (uid: string) => {
       const [{ data: g }, { data: h }] = await Promise.all([
-        supa
-          .from("point_grants")
-          .select("*")
-          .eq("user_id", uid)
-          .order("expires_at", { ascending: true }),
-        supa
-          .from("point_history")
-          .select("*")
-          .eq("user_id", uid)
-          .order("at", { ascending: false })
-          .limit(200),
+        supa.from("point_grants").select("*").eq("user_id", uid).order("expires_at", { ascending: true }),
+        supa.from("point_history").select("*").eq("user_id", uid).order("at", { ascending: false }).limit(200),
       ]);
       if (cancelled) return;
       setGrants(((g as DbGrant[]) ?? []).map(toGrant));
@@ -258,9 +246,9 @@ export function useWallet() {
               table: "point_grants",
               filter: `user_id=eq.${uid}`,
             },
-            refreshAll
+            refreshAll,
           )
-          .subscribe()
+          .subscribe(),
       );
       channels.push(
         supa
@@ -273,9 +261,9 @@ export function useWallet() {
               table: "point_history",
               filter: `user_id=eq.${uid}`,
             },
-            refreshAll
+            refreshAll,
           )
-          .subscribe()
+          .subscribe(),
       );
     };
 
@@ -300,9 +288,9 @@ export function useWallet() {
                   table: "point_grants",
                   filter: `user_id=eq.${newUid}`,
                 },
-                refreshAll
+                refreshAll,
               )
-              .subscribe()
+              .subscribe(),
           );
           channels.push(
             supa
@@ -315,9 +303,9 @@ export function useWallet() {
                   table: "point_history",
                   filter: `user_id=eq.${newUid}`,
                 },
-                refreshAll
+                refreshAll,
               )
-              .subscribe()
+              .subscribe(),
           );
         } else {
           setGrants([]);
@@ -336,10 +324,7 @@ export function useWallet() {
   const balance = sumBalance(grants);
   const nextExpiring = [...grants]
     .filter((g) => g.remaining > 0)
-    .sort(
-      (a, b) =>
-        new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime()
-    )[0];
+    .sort((a, b) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime())[0];
 
   const grantTo = useCallback(
     async (
@@ -347,7 +332,7 @@ export function useWallet() {
       points: number,
       validityDays?: number,
       source: GrantSource = "ADMIN_GRANT",
-      note?: string
+      note?: string,
     ): Promise<{ ok: boolean; error?: string }> => {
       if (points <= 0) return { ok: false, error: "Poin harus > 0" };
       const days = validityDays ?? readSettings().defaultValidityDays;
@@ -370,16 +355,11 @@ export function useWallet() {
       });
       return { ok: true };
     },
-    []
+    [],
   );
 
   const grant = useCallback(
-    async (
-      points: number,
-      validityDays?: number,
-      source: GrantSource = "ADMIN_GRANT",
-      note?: string
-    ) => {
+    async (points: number, validityDays?: number, source: GrantSource = "ADMIN_GRANT", note?: string) => {
       if (points <= 0) return;
       const days = validityDays ?? readSettings().defaultValidityDays;
       const supa = getSupabase();
@@ -409,9 +389,7 @@ export function useWallet() {
         source,
         note,
       };
-      const existing = readGrantsLS().map((og) =>
-        og.remaining > 0 ? { ...og, expiresAt: freshExpiry } : og
-      );
+      const existing = readGrantsLS().map((og) => (og.remaining > 0 ? { ...og, expiresAt: freshExpiry } : og));
       const list = [g, ...existing];
       writeGrantsLS(list);
       const hist = readHistoryLS();
@@ -426,8 +404,8 @@ export function useWallet() {
           (source === "ADMIN_GRANT"
             ? "Hadiah dari admin"
             : source === "PURCHASE"
-            ? "Pembelian paket poin"
-            : "Kredit poin"),
+              ? "Pembelian paket poin"
+              : "Kredit poin"),
       });
       writeHistoryLS(hist);
       setGrants(list);
@@ -435,17 +413,14 @@ export function useWallet() {
 
       try {
         const email =
-          typeof window !== "undefined"
-            ? JSON.parse(localStorage.getItem("edudoc.current_user") ?? "{}")
-                ?.email
-            : null;
+          typeof window !== "undefined" ? JSON.parse(localStorage.getItem("edudoc.current_user") ?? "{}")?.email : null;
         if (email) {
           maybeReactivateOnCredit(email, sumBalance(list));
           updateUserByEmail(email, { points: sumBalance(list) });
         }
       } catch {}
     },
-    []
+    [],
   );
 
   const spend = useCallback(
@@ -476,10 +451,7 @@ export function useWallet() {
         setGrants(curGrants);
         return false;
       }
-      const sorted = [...curGrants].sort(
-        (a, b) =>
-          new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime()
-      );
+      const sorted = [...curGrants].sort((a, b) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
       let remaining = amount;
       for (const g of sorted) {
         if (remaining <= 0) break;
@@ -504,7 +476,7 @@ export function useWallet() {
       setHistory(hist);
       return true;
     },
-    [balance]
+    [balance],
   );
 
   const updateSettings = useCallback((patch: Partial<PointSettings>) => {

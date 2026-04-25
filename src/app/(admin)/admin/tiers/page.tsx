@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 
 import {
   Box,
@@ -25,7 +25,8 @@ import {
 
 import NiPen from "@/icons/nexture/ni-pen";
 import NiRefresh from "@/icons/nexture/ni-refresh";
-import { useTierConfigs, type TierBadgeTone, type TierConfig } from "@/lib/tier-config-store";
+import { formatIDR } from "@/lib/format";
+import { type TierBadgeTone, type TierConfig, useTierConfigs } from "@/lib/tier-config-store";
 
 const BADGE_TONES: { v: TierBadgeTone; label: string }[] = [
   { v: "neutral", label: "Neutral" },
@@ -89,12 +90,49 @@ export default function AdminTiersPage() {
                 </Typography>
                 <Box sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
                   <Typography variant="caption" className="text-text-secondary-dark">
-                    Minimum Poin
+                    Harga Tier
                   </Typography>
-                  <Typography variant="h6" className="text-warning">
-                    {tier.minPoints.toLocaleString("id-ID")} pts
-                  </Typography>
+                  {tier.price > 0 ? (
+                    <Stack direction="row" spacing={1} alignItems="baseline" flexWrap="wrap">
+                      {tier.discountPrice && tier.discountPrice < tier.price ? (
+                        <>
+                          <Typography variant="h6" className="text-success">
+                            {formatIDR(tier.discountPrice)}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            className="text-text-secondary-light"
+                            sx={{ textDecoration: "line-through" }}
+                          >
+                            {formatIDR(tier.price)}
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography variant="h6">{formatIDR(tier.price)}</Typography>
+                      )}
+                    </Stack>
+                  ) : (
+                    <Chip size="small" label="GRATIS" color="success" variant="outlined" />
+                  )}
                 </Box>
+                <Stack direction="row" spacing={2} sx={{ mt: 0.5 }}>
+                  <Box>
+                    <Typography variant="caption" className="text-text-secondary-dark">
+                      Min. Poin
+                    </Typography>
+                    <Typography variant="body2" className="text-warning font-semibold">
+                      {tier.minPoints.toLocaleString("id-ID")} pts
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" className="text-text-secondary-dark">
+                      Bonus Beli
+                    </Typography>
+                    <Typography variant="body2" className="text-warning font-semibold">
+                      +{tier.bonusPoints.toLocaleString("id-ID")} pts
+                    </Typography>
+                  </Box>
+                </Stack>
                 <Stack direction="row" spacing={1} flexWrap="wrap">
                   {tier.canAccessZoom && <Chip size="small" label="Zoom Grup" color="info" variant="outlined" />}
                   {tier.canRequestPrivateZoom && (
@@ -107,12 +145,7 @@ export default function AdminTiersPage() {
         ))}
       </Grid>
 
-      <Dialog
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth>
         <DialogTitle>Edit Tier: {editing?.name}</DialogTitle>
         <DialogContent>
           {editing && (
@@ -135,19 +168,45 @@ export default function AdminTiersPage() {
                 fullWidth
                 type="number"
                 label="Minimum Poin"
+                helperText="Threshold poin total user untuk auto-promote ke tier ini."
                 value={editing.minPoints}
-                onChange={(e) =>
-                  setEditing({ ...editing, minPoints: Math.max(0, Number(e.target.value) || 0) })
-                }
+                onChange={(e) => setEditing({ ...editing, minPoints: Math.max(0, Number(e.target.value) || 0) })}
+              />
+              <Stack direction="row" spacing={1.5}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Harga (Rp)"
+                  helperText="0 = tier gratis (default tier untuk user baru)."
+                  value={editing.price}
+                  onChange={(e) => setEditing({ ...editing, price: Math.max(0, Number(e.target.value) || 0) })}
+                />
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Harga Diskon / Promo (Rp)"
+                  helperText="Opsional. Kalau diisi & < harga, tampil coret di student dashboard."
+                  value={editing.discountPrice ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value === "" ? undefined : Math.max(0, Number(e.target.value) || 0);
+                    setEditing({ ...editing, discountPrice: v });
+                  }}
+                />
+              </Stack>
+              <TextField
+                fullWidth
+                type="number"
+                label="Bonus Poin saat Beli Tier"
+                helperText="Poin yang langsung user dapat saat beli tier ini (sekali, tidak berulang)."
+                value={editing.bonusPoints}
+                onChange={(e) => setEditing({ ...editing, bonusPoints: Math.max(0, Number(e.target.value) || 0) })}
               />
               <TextField
                 fullWidth
                 select
                 label="Badge Tone"
                 value={editing.badgeTone}
-                onChange={(e) =>
-                  setEditing({ ...editing, badgeTone: e.target.value as TierBadgeTone })
-                }
+                onChange={(e) => setEditing({ ...editing, badgeTone: e.target.value as TierBadgeTone })}
               >
                 {BADGE_TONES.map((t) => (
                   <MenuItem key={t.v} value={t.v}>
@@ -159,9 +218,7 @@ export default function AdminTiersPage() {
                 control={
                   <Switch
                     checked={editing.canAccessZoom}
-                    onChange={(e) =>
-                      setEditing({ ...editing, canAccessZoom: e.target.checked })
-                    }
+                    onChange={(e) => setEditing({ ...editing, canAccessZoom: e.target.checked })}
                   />
                 }
                 label="Akses Sesi Zoom Grup"
@@ -170,9 +227,7 @@ export default function AdminTiersPage() {
                 control={
                   <Switch
                     checked={editing.canRequestPrivateZoom}
-                    onChange={(e) =>
-                      setEditing({ ...editing, canRequestPrivateZoom: e.target.checked })
-                    }
+                    onChange={(e) => setEditing({ ...editing, canRequestPrivateZoom: e.target.checked })}
                   />
                 }
                 label="Akses Sesi Privat 1-on-1"

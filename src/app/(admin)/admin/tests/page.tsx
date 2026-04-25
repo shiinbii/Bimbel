@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useRef, useState } from "react";
 
 import {
   Box,
@@ -38,7 +38,7 @@ import NiPen from "@/icons/nexture/ni-pen";
 import NiPlay from "@/icons/nexture/ni-play";
 import NiPlus from "@/icons/nexture/ni-plus";
 import NiSearch from "@/icons/nexture/ni-search";
-import { useTestsStore, type ManagedTest } from "@/lib/tests-store";
+import { type ManagedTest, useTestsStore } from "@/lib/tests-store";
 import type { Question, Test } from "@/lib/types";
 
 const TYPE_COLOR: Record<Test["type"], "primary" | "warning" | "info"> = {
@@ -110,9 +110,7 @@ export default function AdminTestsPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter(
-      (t) => t.title.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q),
-    );
+    return list.filter((t) => t.title.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q));
   }, [list, search]);
 
   const openEdit = (t: ManagedTest) => {
@@ -272,10 +270,9 @@ export default function AdminTestsPage() {
       });
 
       if (questions.length === 0) {
-        enqueueSnackbar(
-          "Tidak ada pertanyaan valid. Pastikan kolom: Question, A, B, C, D, Correct, Explanation",
-          { variant: "error" },
-        );
+        enqueueSnackbar("Tidak ada pertanyaan valid. Pastikan kolom: Question, A, B, C, D, Correct, Explanation", {
+          variant: "error",
+        });
         return;
       }
 
@@ -296,10 +293,7 @@ export default function AdminTestsPage() {
     if (name.endsWith(".xlsx")) {
       void parseExcel(file);
     } else if (name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx")) {
-      enqueueSnackbar(
-        "Import PDF/Word akan segera tersedia — saat ini hanya Excel (.xlsx)",
-        { variant: "info" },
-      );
+      enqueueSnackbar("Import PDF/Word akan segera tersedia — saat ini hanya Excel (.xlsx)", { variant: "info" });
     } else {
       enqueueSnackbar("Format tidak didukung. Gunakan .xlsx", { variant: "error" });
     }
@@ -322,15 +316,15 @@ export default function AdminTestsPage() {
       description: meta.description,
       questions,
       active: meta.active,
-      questionsPerAttempt: Math.min(questions.length, Math.max(1, Number(meta.questionsPerAttempt) || questions.length)),
+      questionsPerAttempt: Math.min(
+        questions.length,
+        Math.max(1, Number(meta.questionsPerAttempt) || questions.length),
+      ),
       shuffleQuestions: meta.shuffleQuestions,
       shuffleOptions: meta.shuffleOptions,
     };
     upsert(fresh);
-    enqueueSnackbar(
-      `Soal "${fresh.title}" dibuat dengan ${questions.length} pertanyaan`,
-      { variant: "success" },
-    );
+    enqueueSnackbar(`Soal "${fresh.title}" dibuat dengan ${questions.length} pertanyaan`, { variant: "success" });
     setImportOpen(false);
     setImportPreview(null);
   };
@@ -346,7 +340,7 @@ export default function AdminTestsPage() {
             Lihat, edit, simulasi, tambah & import soal. Excel siap pakai; PDF & Word menyusul.
           </Typography>
         </Grid>
-        <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row gap-2 flex-wrap">
+        <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row flex-wrap gap-2">
           <Button
             variant="surface"
             color="grey"
@@ -356,19 +350,8 @@ export default function AdminTestsPage() {
           >
             {importBusy ? "Memproses..." : "Import (Excel / PDF / Word)"}
           </Button>
-          <input
-            ref={importFileRef}
-            type="file"
-            accept=".xlsx,.pdf,.doc,.docx"
-            hidden
-            onChange={onImportFileChange}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<NiPlus size="medium" />}
-            onClick={openAdd}
-          >
+          <input ref={importFileRef} type="file" accept=".xlsx,.pdf,.doc,.docx" hidden onChange={onImportFileChange} />
+          <Button variant="contained" color="primary" startIcon={<NiPlus size="medium" />} onClick={openAdd}>
             Soal Baru
           </Button>
         </Grid>
@@ -498,7 +481,11 @@ export default function AdminTestsPage() {
                 <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
                   <Chip size="small" label={viewFor.subject} />
                   <Chip size="small" label={TYPE_LABEL[viewFor.type]} color={TYPE_COLOR[viewFor.type]} />
-                  <Chip size="small" label={viewFor.active ? "Aktif" : "Nonaktif"} color={viewFor.active ? "success" : "default"} />
+                  <Chip
+                    size="small"
+                    label={viewFor.active ? "Aktif" : "Nonaktif"}
+                    color={viewFor.active ? "success" : "default"}
+                  />
                 </Stack>
               </Box>
               {viewFor.description && (
@@ -513,7 +500,10 @@ export default function AdminTestsPage() {
                   { k: "Passing Score", v: `${viewFor.passingScore}%` },
                   { k: "Soal di bank", v: `${viewFor.questions.length} soal` },
                   { k: "Per attempt", v: `${viewFor.questionsPerAttempt} soal` },
-                  { k: "Shuffle Q / Opt", v: `${viewFor.shuffleQuestions ? "Ya" : "Tidak"} / ${viewFor.shuffleOptions ? "Ya" : "Tidak"}` },
+                  {
+                    k: "Shuffle Q / Opt",
+                    v: `${viewFor.shuffleQuestions ? "Ya" : "Tidak"} / ${viewFor.shuffleOptions ? "Ya" : "Tidak"}`,
+                  },
                 ].map((x) => (
                   <Grid key={x.k} size={{ xs: 6, md: 4 }}>
                     <Typography variant="caption" className="text-text-secondary-dark">
@@ -575,7 +565,15 @@ export default function AdminTestsPage() {
             </Button>
           )}
           {viewFor && (
-            <Button variant="contained" color="primary" startIcon={<NiPen size="small" />} onClick={() => { openEdit(viewFor); setViewFor(null); }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<NiPen size="small" />}
+              onClick={() => {
+                openEdit(viewFor);
+                setViewFor(null);
+              }}
+            >
               Edit
             </Button>
           )}
@@ -791,8 +789,8 @@ export default function AdminTestsPage() {
           {importPreview && (
             <Stack spacing={2} sx={{ pt: 1 }}>
               <Typography variant="body2" className="text-text-secondary">
-                <strong>{importPreview.questions.length}</strong> pertanyaan terdeteksi. Isi metadata,
-                preview 3 soal pertama di bawah.
+                <strong>{importPreview.questions.length}</strong> pertanyaan terdeteksi. Isi metadata, preview 3 soal
+                pertama di bawah.
               </Typography>
               <TextField
                 fullWidth

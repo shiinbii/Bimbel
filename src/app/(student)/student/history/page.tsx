@@ -20,12 +20,18 @@ import NiArrowHistory from "@/icons/nexture/ni-arrow-history";
 import NiArrowUpRight from "@/icons/nexture/ni-arrow-up-right";
 import NiClock from "@/icons/nexture/ni-clock";
 import NiCoin from "@/icons/nexture/ni-coin";
+import { useCurrentUser } from "@/lib/current-user";
 import { formatIDR } from "@/lib/format";
-import { mockTransactions } from "@/lib/mock-data";
 import { daysUntil, useWallet } from "@/lib/points-store";
+import { useTransactions } from "@/lib/transactions-store";
 
 export default function StudentHistoryPage() {
   const { balance, history, grants, nextExpiring } = useWallet();
+  const { user } = useCurrentUser();
+  const { list: txAll } = useTransactions();
+  const myTx = user.email
+    ? txAll.filter((t) => (t.userEmail ?? "").toLowerCase() === user.email!.toLowerCase()).slice(0, 5)
+    : [];
 
   const earn = history.filter((h) => h.kind === "GRANT").reduce((a, h) => a + h.points, 0);
   const spend = history.filter((h) => h.kind === "SPEND").reduce((a, h) => a + h.points, 0);
@@ -104,9 +110,7 @@ export default function StudentHistoryPage() {
                 </Typography>
               </Box>
               {history.length === 0 ? (
-                <Typography className="text-text-secondary py-4 text-center">
-                  Belum ada aktivitas poin.
-                </Typography>
+                <Typography className="text-text-secondary py-4 text-center">Belum ada aktivitas poin.</Typography>
               ) : (
                 <Box className="flex flex-col gap-1.5" sx={{ maxHeight: 560, overflowY: "auto" }}>
                   {history.map((h) => {
@@ -131,11 +135,7 @@ export default function StudentHistoryPage() {
                             alignItems: "center",
                             justifyContent: "center",
                             color:
-                              h.kind === "SPEND"
-                                ? "error.main"
-                                : h.kind === "EXPIRE"
-                                  ? "warning.main"
-                                  : "success.main",
+                              h.kind === "SPEND" ? "error.main" : h.kind === "EXPIRE" ? "warning.main" : "success.main",
                             bgcolor: "action.hover",
                             flexShrink: 0,
                           }}
@@ -148,7 +148,7 @@ export default function StudentHistoryPage() {
                             <NiArrowUpRight size="small" />
                           )}
                         </Box>
-                        <Box className="flex-1 min-w-0">
+                        <Box className="min-w-0 flex-1">
                           <Typography variant="body2" noWrap>
                             {h.note}
                           </Typography>
@@ -190,57 +190,57 @@ export default function StudentHistoryPage() {
               <Typography variant="body2" className="text-text-secondary-dark">
                 Riwayat pembelian paket poin kamu.
               </Typography>
-              {mockTransactions.slice(0, 5).map((t) => (
-                <Box
-                  key={t.id}
-                  className="flex items-center gap-2.5 p-2"
-                  sx={{
-                    borderRadius: 1.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    bgcolor: "background.default",
-                  }}
-                >
+              {myTx.length === 0 ? (
+                <Typography className="text-text-secondary py-4 text-center">
+                  Belum ada transaksi pembayaran.
+                </Typography>
+              ) : (
+                myTx.map((t) => (
                   <Box
+                    key={t.id}
+                    className="flex items-center gap-2.5 p-2"
                     sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 1,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "warning.main",
-                      bgcolor: "action.hover",
-                      flexShrink: 0,
+                      borderRadius: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      bgcolor: "background.default",
                     }}
                   >
-                    <NiCoin size="small" />
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 1,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "warning.main",
+                        bgcolor: "action.hover",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <NiCoin size="small" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography variant="body2" noWrap>
+                        {t.package}
+                      </Typography>
+                      <Typography variant="caption" className="text-text-secondary-light">
+                        {t.createdAt} · {t.method}
+                      </Typography>
+                    </Box>
+                    <Box className="text-right">
+                      <Typography variant="body2">{formatIDR(t.amount)}</Typography>
+                      <Chip
+                        size="small"
+                        label={t.status}
+                        color={t.status === "SUCCESS" ? "success" : t.status === "PENDING" ? "warning" : "error"}
+                        variant="outlined"
+                      />
+                    </Box>
                   </Box>
-                  <Box className="flex-1 min-w-0">
-                    <Typography variant="body2" noWrap>
-                      {t.package}
-                    </Typography>
-                    <Typography variant="caption" className="text-text-secondary-light">
-                      {t.createdAt} · {t.method}
-                    </Typography>
-                  </Box>
-                  <Box className="text-right">
-                    <Typography variant="body2">{formatIDR(t.amount)}</Typography>
-                    <Chip
-                      size="small"
-                      label={t.status}
-                      color={
-                        t.status === "SUCCESS"
-                          ? "success"
-                          : t.status === "PENDING"
-                            ? "warning"
-                            : "error"
-                      }
-                      variant="outlined"
-                    />
-                  </Box>
-                </Box>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -283,20 +283,14 @@ export default function StudentHistoryPage() {
                             size="small"
                             label={g.source.replace("_", " ")}
                             color={
-                              g.source === "ADMIN_GRANT"
-                                ? "warning"
-                                : g.source === "PURCHASE"
-                                  ? "success"
-                                  : "default"
+                              g.source === "ADMIN_GRANT" ? "warning" : g.source === "PURCHASE" ? "success" : "default"
                             }
                             variant="outlined"
                           />
                         </TableCell>
                         <TableCell align="right">{g.points}</TableCell>
                         <TableCell align="right">
-                          <Typography className="text-warning font-semibold">
-                            {g.remaining}
-                          </Typography>
+                          <Typography className="text-warning font-semibold">{g.remaining}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="caption" className="text-text-secondary-light">

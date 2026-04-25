@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
 import {
   Alert,
@@ -30,7 +30,7 @@ import NiCross from "@/icons/nexture/ni-cross";
 import NiMessage from "@/icons/nexture/ni-message";
 import { useCurrentUser } from "@/lib/current-user";
 import { pushNotification } from "@/lib/notifications-store";
-import { usePrivateZoom, type PrivateZoomRequest, type PrivateZoomStatus } from "@/lib/private-zoom-store";
+import { type PrivateZoomRequest, type PrivateZoomStatus, usePrivateZoom } from "@/lib/private-zoom-store";
 import { useTeacherProfiles } from "@/lib/teachers-store";
 
 const STATUS_META: Record<
@@ -62,9 +62,7 @@ export default function TeacherPrivateZoomPage() {
   const { enqueueSnackbar } = useSnackbar();
 
   const me = useMemo(() => {
-    const byEmail = teachers.find(
-      (t) => user.email && t.email.toLowerCase() === user.email.toLowerCase(),
-    );
+    const byEmail = teachers.find((t) => user.email && t.email.toLowerCase() === user.email.toLowerCase());
     return byEmail ?? teachers[0];
   }, [teachers, user.email]);
 
@@ -76,9 +74,7 @@ export default function TeacherPrivateZoomPage() {
 
   const mine = useMemo(() => {
     if (!me) return [];
-    return requests
-      .filter((r) => r.teacherId === me.id)
-      .filter((r) => filter === "ALL" || r.status === filter);
+    return requests.filter((r) => r.teacherId === me.id).filter((r) => filter === "ALL" || r.status === filter);
   }, [requests, me, filter]);
 
   if (!me) {
@@ -140,16 +136,15 @@ export default function TeacherPrivateZoomPage() {
             Sesi Privat 1-on-1
           </Typography>
           <Typography variant="body2" className="text-text-secondary">
-            Permintaan sesi privat dari siswa premium. Tentukan jadwal + URL Zoom, siswa akan
-            dapat notifikasi otomatis.
+            Permintaan sesi privat dari siswa premium. Tentukan jadwal + URL Zoom, siswa akan dapat notifikasi otomatis.
           </Typography>
         </Grid>
       </Grid>
 
       <Grid size={12}>
         <Alert severity="info" variant="outlined">
-          Siswa akan menerima notifikasi dashboard + push saat kamu jadwalkan sesi.
-          Gunakan chat untuk klarifikasi topik sebelum sesi berjalan.
+          Siswa akan menerima notifikasi dashboard + push saat kamu jadwalkan sesi. Gunakan chat untuk klarifikasi topik
+          sebelum sesi berjalan.
         </Alert>
       </Grid>
 
@@ -351,8 +346,7 @@ export default function TeacherPrivateZoomPage() {
         <DialogTitle>Tolak / Re-schedule?</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Siswa akan dapat notifikasi bahwa kamu belum bisa dan diminta chat untuk
-            re-schedule. Yakin lanjut?
+            Siswa akan dapat notifikasi bahwa kamu belum bisa dan diminta chat untuk re-schedule. Yakin lanjut?
           </Typography>
         </DialogContent>
         <DialogActions>

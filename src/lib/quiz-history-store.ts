@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { getSupabase } from "./supabase";
+import { useCallback, useEffect, useState } from "react";
 
 const KEY = "edudoc.quiz_history";
 
@@ -139,11 +139,7 @@ export function useQuizHistory(email?: string) {
 
     let cancelled = false;
     const refresh = async () => {
-      let q = supa
-        .from("quiz_attempts")
-        .select("*")
-        .order("completed_at", { ascending: false })
-        .limit(200);
+      let q = supa.from("quiz_attempts").select("*").order("completed_at", { ascending: false }).limit(200);
       if (email) q = q.ilike("student_email", email);
       const { data } = await q;
       if (cancelled) return;
@@ -154,11 +150,7 @@ export function useQuizHistory(email?: string) {
 
     const ch = supa
       .channel(`qa_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "quiz_attempts" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_attempts" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -167,9 +159,7 @@ export function useQuizHistory(email?: string) {
     };
   }, [email]);
 
-  const list = email
-    ? all.filter((a) => a.studentEmail.toLowerCase() === email.toLowerCase())
-    : all;
+  const list = email ? all.filter((a) => a.studentEmail.toLowerCase() === email.toLowerCase()) : all;
 
   const clear = useCallback(() => {
     const supa = getSupabase();

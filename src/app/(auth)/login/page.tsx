@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormik } from "formik";
+import { MuiOtpInput } from "mui-one-time-password-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSnackbar } from "notistack";
@@ -22,7 +23,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { MuiOtpInput } from "mui-one-time-password-input";
 
 import EduDocLogo from "@/components/auth/EduDocLogo";
 import FirstLoginModal from "@/components/auth/FirstLoginModal";
@@ -35,25 +35,19 @@ import NiEyeOpen from "@/icons/nexture/ni-eye-open";
 import NiLock from "@/icons/nexture/ni-lock";
 import NiShield from "@/icons/nexture/ni-shield";
 import NiUser from "@/icons/nexture/ni-user";
+import { logAudit } from "@/lib/audit-store";
 import { signInEmail, touchLastLogin } from "@/lib/auth-client";
 import { setCurrentUserOnce } from "@/lib/current-user";
 import { useRole } from "@/lib/role-context";
 import { getSupabase } from "@/lib/supabase";
 import type { Role } from "@/lib/types";
-import {
-  findUserByEmail,
-  updateUserByEmail,
-  type DeactivationReason,
-} from "@/lib/users-store";
+import { type DeactivationReason, findUserByEmail, updateUserByEmail } from "@/lib/users-store";
 
 const FIRST_LOGIN_KEY_PREFIX = "edudoc.first_login_ack_";
 const INACTIVITY_MS = 90 * 24 * 60 * 60 * 1000;
 
 const credentialsSchema = yup.object({
-  email: yup
-    .string()
-    .required("Email wajib diisi")
-    .email("Format email tidak valid"),
+  email: yup.string().required("Email wajib diisi").email("Format email tidak valid"),
   password: yup.string().required("Password wajib diisi").min(6, "Minimal 6 karakter"),
 });
 
@@ -71,16 +65,16 @@ export default function LoginPage() {
     const reason = searchParams.get("reason");
     if (reason === "idle") {
       idleNotifiedRef.current = true;
-      enqueueSnackbar(
-        "Sesi berakhir karena tidak ada aktivitas selama 20 menit.",
-        { variant: "warning", autoHideDuration: 5000 }
-      );
+      enqueueSnackbar("Sesi berakhir karena tidak ada aktivitas selama 20 menit.", {
+        variant: "warning",
+        autoHideDuration: 5000,
+      });
     } else if (reason === "cold") {
       idleNotifiedRef.current = true;
-      enqueueSnackbar(
-        "Browser dimulai ulang — silakan login kembali untuk keamanan.",
-        { variant: "info", autoHideDuration: 5000 }
-      );
+      enqueueSnackbar("Browser dimulai ulang — silakan login kembali untuk keamanan.", {
+        variant: "info",
+        autoHideDuration: 5000,
+      });
     }
   }, [searchParams, enqueueSnackbar]);
 
@@ -132,9 +126,7 @@ export default function LoginPage() {
           if (p.deactivated) {
             const reason = p.deactivation_reason ?? "ADMIN_ACTION";
             await supa.auth.signOut();
-            router.push(
-              `/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`
-            );
+            router.push(`/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`);
             return;
           }
           setAuthedRole(p.role);
@@ -145,8 +137,7 @@ export default function LoginPage() {
 
       const userRecord = findUserByEmail(email);
       if (userRecord) {
-        const isProtectedRole =
-          userRecord.role === "ADMIN" || userRecord.role === "SUPER_ADMIN";
+        const isProtectedRole = userRecord.role === "ADMIN" || userRecord.role === "SUPER_ADMIN";
         if (
           !isProtectedRole &&
           !userRecord.deactivated &&
@@ -162,17 +153,12 @@ export default function LoginPage() {
           enqueueSnackbar("Akun dinonaktifkan karena tidak login > 3 bulan", {
             variant: "error",
           });
-          router.push(
-            `/account-deactivated?reason=INACTIVITY_3_MONTHS&email=${encodeURIComponent(email)}`
-          );
+          router.push(`/account-deactivated?reason=INACTIVITY_3_MONTHS&email=${encodeURIComponent(email)}`);
           return;
         }
         if (userRecord.deactivated) {
-          const reason: DeactivationReason =
-            userRecord.deactivationReason ?? "ADMIN_ACTION";
-          router.push(
-            `/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`
-          );
+          const reason: DeactivationReason = userRecord.deactivationReason ?? "ADMIN_ACTION";
+          router.push(`/account-deactivated?reason=${reason}&email=${encodeURIComponent(email)}`);
           return;
         }
       }
@@ -206,6 +192,7 @@ export default function LoginPage() {
       });
     }
     void touchLastLogin();
+    logAudit({ action: "USER_LOGIN", target: `via:email` });
 
     const needsAck =
       (authedRole === "STUDENT" || authedRole === "TEACHER") &&
@@ -318,17 +305,11 @@ export default function LoginPage() {
                 </Typography>
               </Box>
 
-              <Box
-                component="form"
-                onSubmit={formik.handleSubmit}
-                className="flex flex-col gap-4"
-              >
+              <Box component="form" onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
                 <FormControl className="outlined" variant="standard" size="small">
                   <FormLabel component="label" className="flex flex-row">
                     Email
-                    {formik.touched.email && formik.errors.email && (
-                      <InputErrorTooltip title={formik.errors.email} />
-                    )}
+                    {formik.touched.email && formik.errors.email && <InputErrorTooltip title={formik.errors.email} />}
                   </FormLabel>
                   <Input
                     id="email"
@@ -368,10 +349,7 @@ export default function LoginPage() {
                     }
                     endAdornment={
                       <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword((v) => !v)}
-                          edge="end"
-                        >
+                        <IconButton onClick={() => setShowPassword((v) => !v)} edge="end">
                           {showPassword ? (
                             <NiEyeClose size="medium" className="text-text-secondary" />
                           ) : (
@@ -384,10 +362,7 @@ export default function LoginPage() {
                 </FormControl>
 
                 <Box className="flex items-center justify-between">
-                  <Link
-                    href="/forgot-password"
-                    className="link-text-secondary link-underline-hover text-sm"
-                  >
+                  <Link href="/forgot-password" className="link-text-secondary link-underline-hover text-sm">
                     Lupa password?
                   </Link>
                 </Box>
@@ -397,13 +372,7 @@ export default function LoginPage() {
                   variant="contained"
                   fullWidth
                   disabled={formik.isSubmitting}
-                  endIcon={
-                    formik.isSubmitting ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <NiArrowRight size="medium" />
-                    )
-                  }
+                  endIcon={formik.isSubmitting ? <CircularProgress size={16} /> : <NiArrowRight size="medium" />}
                 >
                   {formik.isSubmitting ? "Memproses..." : "Masuk"}
                 </Button>
@@ -411,20 +380,11 @@ export default function LoginPage() {
 
               <Divider className="text-text-secondary my-0 text-sm">atau</Divider>
 
-              <GoogleButton
-                label="Lanjutkan dengan Google"
-                onClick={handleGoogle}
-              />
+              <GoogleButton label="Lanjutkan dengan Google" onClick={handleGoogle} />
 
-              <Typography
-                variant="body2"
-                className="text-text-secondary text-center"
-              >
+              <Typography variant="body2" className="text-text-secondary text-center">
                 Belum punya akun?{" "}
-                <Link
-                  href="/register"
-                  className="link-primary link-underline-hover font-semibold"
-                >
+                <Link href="/register" className="link-primary link-underline-hover font-semibold">
                   Daftar gratis
                 </Link>
               </Typography>
@@ -436,20 +396,13 @@ export default function LoginPage() {
                   Verifikasi OTP
                 </Typography>
                 <Typography variant="body2" className="text-text-secondary">
-                  Masukkan kode 6 digit yang dikirim ke{" "}
-                  <strong>{authedEmail}</strong>
+                  Masukkan kode 6 digit yang dikirim ke <strong>{authedEmail}</strong>
                 </Typography>
               </Box>
 
-              <Alert
-                severity="info"
-                icon={<NiShield size="medium" />}
-                className="neutral"
-              >
+              <Alert severity="info" icon={<NiShield size="medium" />} className="neutral">
                 <Typography variant="subtitle2">Verifikasi 2 Langkah</Typography>
-                <Typography variant="caption">
-                  Via Email · kode berlaku 5 menit
-                </Typography>
+                <Typography variant="caption">Via Email · kode berlaku 5 menit</Typography>
               </Alert>
 
               <MuiOtpInput
@@ -474,12 +427,7 @@ export default function LoginPage() {
                 >
                   Ganti akun / ulangi
                 </Button>
-                <Button
-                  variant="text"
-                  size="small"
-                  disabled={resending}
-                  onClick={resendOtp}
-                >
+                <Button variant="text" size="small" disabled={resending} onClick={resendOtp}>
                   {resending ? "Mengirim..." : "Kirim ulang"}
                 </Button>
               </Box>
@@ -489,13 +437,7 @@ export default function LoginPage() {
                 fullWidth
                 onClick={verifyOtp}
                 disabled={otpLoading}
-                endIcon={
-                  otpLoading ? (
-                    <CircularProgress size={16} />
-                  ) : (
-                    <NiArrowRight size="medium" />
-                  )
-                }
+                endIcon={otpLoading ? <CircularProgress size={16} /> : <NiArrowRight size="medium" />}
               >
                 {otpLoading ? "Memverifikasi..." : "Verifikasi & Masuk"}
               </Button>

@@ -29,10 +29,7 @@ export default function TeacherStudentsPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return mockStudents;
-    return mockStudents.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q),
-    );
+    return mockStudents.filter((s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
   }, [search]);
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
 import {
   Box,
@@ -68,10 +68,7 @@ export default function AdminTransactionsPage() {
     return txList.filter((t) => {
       const matchStatus = status === "ALL" || t.status === status;
       const matchSearch =
-        !q ||
-        t.user.toLowerCase().includes(q) ||
-        t.package.toLowerCase().includes(q) ||
-        t.id.toLowerCase().includes(q);
+        !q || t.user.toLowerCase().includes(q) || t.package.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
       return matchStatus && matchSearch;
     });
   }, [txList, status, search]);
@@ -138,20 +135,10 @@ export default function AdminTransactionsPage() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row items-start gap-2">
-          <Button
-            variant="surface"
-            color="grey"
-            startIcon={<NiDocumentArchive size="medium" />}
-            onClick={exportXlsx}
-          >
+          <Button variant="surface" color="grey" startIcon={<NiDocumentArchive size="medium" />} onClick={exportXlsx}>
             Export Excel
           </Button>
-          <Button
-            variant="surface"
-            color="grey"
-            startIcon={<NiDocumentArchive size="medium" />}
-            onClick={exportTxt}
-          >
+          <Button variant="surface" color="grey" startIcon={<NiDocumentArchive size="medium" />} onClick={exportTxt}>
             Export Teks
           </Button>
         </Grid>
@@ -264,13 +251,7 @@ export default function AdminTransactionsPage() {
                           <Chip
                             size="small"
                             label={t.status}
-                            color={
-                              t.status === "SUCCESS"
-                                ? "success"
-                                : t.status === "PENDING"
-                                  ? "warning"
-                                  : "error"
-                            }
+                            color={t.status === "SUCCESS" ? "success" : t.status === "PENDING" ? "warning" : "error"}
                             variant="outlined"
                           />
                         </TableCell>
@@ -286,9 +267,7 @@ export default function AdminTransactionsPage() {
                               variant="pastel"
                               color="success"
                               startIcon={<NiDocumentCheck size="small" />}
-                              onClick={() =>
-                                enqueueSnackbar(`Approve ${t.id} (demo)`, { variant: "success" })
-                              }
+                              onClick={() => enqueueSnackbar(`Approve ${t.id} (demo)`, { variant: "success" })}
                             >
                               Approve
                             </Button>

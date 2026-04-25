@@ -35,23 +35,17 @@ import NiLock from "@/icons/nexture/ni-lock";
 import NiPhone from "@/icons/nexture/ni-phone";
 import NiUser from "@/icons/nexture/ni-user";
 import { setCurrentUserOnce } from "@/lib/current-user";
-import { SUPABASE_CONFIGURED, getSupabase } from "@/lib/supabase";
+import { getSupabase, SUPABASE_CONFIGURED } from "@/lib/supabase";
 
 const registerSchema = yup.object({
   name: yup.string().required("Nama wajib diisi").min(3, "Minimal 3 karakter"),
-  email: yup
-    .string()
-    .required("Email wajib diisi")
-    .email("Format email tidak valid"),
+  email: yup.string().required("Email wajib diisi").email("Format email tidak valid"),
   phone: yup
     .string()
     .required("Nomor HP wajib diisi")
     .min(8, "Terlalu pendek")
     .matches(/^[0-9+\-\s]+$/, "Hanya angka, +, spasi, dan strip"),
-  password: yup
-    .string()
-    .required("Password wajib diisi")
-    .min(6, "Minimal 6 karakter"),
+  password: yup.string().required("Password wajib diisi").min(6, "Minimal 6 karakter"),
   confirm: yup
     .string()
     .required("Konfirmasi password wajib diisi")
@@ -161,10 +155,10 @@ export default function RegisterPage() {
       }
 
       if (!res.data.session) {
-        enqueueSnackbar(
-          "Akun dibuat! Cek inbox Gmail kamu untuk klik link konfirmasi.",
-          { variant: "success", autoHideDuration: 6000 }
-        );
+        enqueueSnackbar("Akun dibuat! Cek inbox Gmail kamu untuk klik link konfirmasi.", {
+          variant: "success",
+          autoHideDuration: 6000,
+        });
         router.push("/login");
         return;
       }
@@ -221,17 +215,11 @@ export default function RegisterPage() {
             </Typography>
           </Box>
 
-          <Box
-            component="form"
-            onSubmit={formik.handleSubmit}
-            className="mt-4 flex flex-col gap-4"
-          >
+          <Box component="form" onSubmit={formik.handleSubmit} className="mt-4 flex flex-col gap-4">
             <FormControl className="outlined" variant="standard" size="small">
               <FormLabel component="label" className="flex flex-row">
                 Nama Lengkap
-                {formik.touched.name && formik.errors.name && (
-                  <InputErrorTooltip title={formik.errors.name} />
-                )}
+                {formik.touched.name && formik.errors.name && <InputErrorTooltip title={formik.errors.name} />}
               </FormLabel>
               <Input
                 id="name"
@@ -251,9 +239,7 @@ export default function RegisterPage() {
             <FormControl className="outlined" variant="standard" size="small">
               <FormLabel component="label" className="flex flex-row">
                 Email
-                {formik.touched.email && formik.errors.email && (
-                  <InputErrorTooltip title={formik.errors.email} />
-                )}
+                {formik.touched.email && formik.errors.email && <InputErrorTooltip title={formik.errors.email} />}
               </FormLabel>
               <Input
                 id="email"
@@ -275,9 +261,7 @@ export default function RegisterPage() {
             <FormControl className="outlined" variant="standard" size="small">
               <FormLabel component="label" className="flex flex-row">
                 Nomor HP
-                {formik.touched.phone && formik.errors.phone && (
-                  <InputErrorTooltip title={formik.errors.phone} />
-                )}
+                {formik.touched.phone && formik.errors.phone && <InputErrorTooltip title={formik.errors.phone} />}
               </FormLabel>
               <Input
                 id="phone"
@@ -397,19 +381,9 @@ export default function RegisterPage() {
               variant="contained"
               fullWidth
               disabled={formik.isSubmitting}
-              endIcon={
-                formik.isSubmitting ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <NiArrowRight size="medium" />
-                )
-              }
+              endIcon={formik.isSubmitting ? <CircularProgress size={16} /> : <NiArrowRight size="medium" />}
             >
-              {formik.isSubmitting
-                ? "Memproses..."
-                : fromGoogle
-                ? "Simpan & Lanjut"
-                : "Daftar Gratis"}
+              {formik.isSubmitting ? "Memproses..." : fromGoogle ? "Simpan & Lanjut" : "Daftar Gratis"}
             </Button>
           </Box>
 
@@ -420,12 +394,9 @@ export default function RegisterPage() {
             </>
           )}
 
-          <Typography variant="body2" className="text-text-secondary text-center mt-4">
+          <Typography variant="body2" className="text-text-secondary mt-4 text-center">
             Sudah punya akun?{" "}
-            <Link
-              href="/login"
-              className="link-primary link-underline-hover font-semibold"
-            >
+            <Link href="/login" className="link-primary link-underline-hover font-semibold">
               Masuk di sini
             </Link>
           </Typography>

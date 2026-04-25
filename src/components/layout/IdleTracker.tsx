@@ -1,30 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { getSupabase } from "@/lib/supabase";
+
 import {
   IDLE_ACTIVITY_THROTTLE_MS,
   IDLE_CHECK_INTERVAL_MS,
   IDLE_COOKIE_NAME,
   IDLE_TIMEOUT_MS,
 } from "@/lib/idle-config";
+import { getSupabase } from "@/lib/supabase";
 
-const ACTIVITY_EVENTS = [
-  "mousemove",
-  "mousedown",
-  "keydown",
-  "click",
-  "scroll",
-  "touchstart",
-] as const;
+const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "click", "scroll", "touchstart"] as const;
 
 function writeActivityCookie(ts: number) {
   if (typeof document === "undefined") return;
   const maxAge = Math.floor(IDLE_TIMEOUT_MS / 1000);
-  const secure =
-    typeof window !== "undefined" && window.location.protocol === "https:"
-      ? "; Secure"
-      : "";
+  const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${IDLE_COOKIE_NAME}=${ts}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}`;
 }
 
@@ -79,18 +70,14 @@ export default function IdleTracker() {
       lastActivity = now;
       lastCookieWrite = now;
       writeActivityCookie(now);
-      ACTIVITY_EVENTS.forEach((ev) =>
-        window.addEventListener(ev, onActivity, { passive: true })
-      );
+      ACTIVITY_EVENTS.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
       checkTimer = setInterval(checkIdle, IDLE_CHECK_INTERVAL_MS);
     };
 
     const stop = () => {
       if (!active) return;
       active = false;
-      ACTIVITY_EVENTS.forEach((ev) =>
-        window.removeEventListener(ev, onActivity)
-      );
+      ACTIVITY_EVENTS.forEach((ev) => window.removeEventListener(ev, onActivity));
       if (checkTimer) {
         clearInterval(checkTimer);
         checkTimer = null;

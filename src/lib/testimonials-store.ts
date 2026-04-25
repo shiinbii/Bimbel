@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Testimonial } from "./types";
 import { logAudit } from "./audit-store";
 import { mockTestimonials } from "./mock-data";
 import { getSupabase } from "./supabase";
+import type { Testimonial } from "./types";
+import { useCallback, useEffect, useState } from "react";
 
 type DbRow = {
   id: string;
@@ -48,10 +48,7 @@ export function useTestimonials() {
     }
     let cancelled = false;
     const refresh = async () => {
-      const { data, error } = await supa
-        .from("testimonials")
-        .select("*")
-        .order("order", { ascending: true });
+      const { data, error } = await supa.from("testimonials").select("*").order("order", { ascending: true });
       if (cancelled) return;
       if (error) {
         console.warn("[testimonials] select error:", error.message);
@@ -67,11 +64,7 @@ export function useTestimonials() {
 
     const ch = supa
       .channel(`tst_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "testimonials" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "testimonials" }, () => refresh())
       .subscribe();
 
     return () => {

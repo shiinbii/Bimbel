@@ -4,14 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Chip, Paper, Typography } from "@mui/material";
 
 import EduDocLogo from "@/components/auth/EduDocLogo";
 import NiHeadset from "@/icons/nexture/ni-headset";
@@ -26,9 +19,7 @@ function DeactivatedInner() {
   const email = params.get("email") ?? undefined;
 
   const reasonKey: NonNullable<DeactivationReason> =
-    reasonParam === "INACTIVITY_3_MONTHS" ||
-    reasonParam === "ZERO_CREDIT" ||
-    reasonParam === "ADMIN_ACTION"
+    reasonParam === "INACTIVITY_3_MONTHS" || reasonParam === "ZERO_CREDIT" || reasonParam === "ADMIN_ACTION"
       ? reasonParam
       : "ADMIN_ACTION";
 
@@ -38,7 +29,7 @@ function DeactivatedInner() {
     <Box className="flex min-h-screen w-full items-center justify-center p-4">
       <Paper
         elevation={3}
-        className="bg-foreground outline-line max-w-full w-lg rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
+        className="bg-foreground outline-line w-lg max-w-full rounded-4xl py-14 outline -outline-offset-1 backdrop-blur-sm"
       >
         <Box className="flex flex-col gap-6 px-8 sm:px-14">
           <Box className="flex justify-center">
@@ -74,16 +65,11 @@ function DeactivatedInner() {
 
           <Box className="flex flex-col gap-2">
             {reasonKey === "ZERO_CREDIT" && (
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => router.push("/student/dashboard#packages")}
-              >
+              <Button variant="contained" fullWidth onClick={() => router.push("/student/dashboard#packages")}>
                 Beli Paket Poin
               </Button>
             )}
-            {(reasonKey === "INACTIVITY_3_MONTHS" ||
-              reasonKey === "ADMIN_ACTION") && (
+            {(reasonKey === "INACTIVITY_3_MONTHS" || reasonKey === "ADMIN_ACTION") && (
               <Button
                 variant="contained"
                 fullWidth
@@ -102,12 +88,7 @@ function DeactivatedInner() {
               >
                 Beranda
               </Button>
-              <Button
-                variant="outlined"
-                color="grey"
-                component={Link}
-                href="/login"
-              >
+              <Button variant="outlined" color="grey" component={Link} href="/login">
                 Login Lain
               </Button>
             </Box>

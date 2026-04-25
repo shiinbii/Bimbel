@@ -2,21 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import { useMemo, useState } from "react";
 
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  IconButton,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Avatar, Box, Button, Card, CardContent, Chip, IconButton, Stack, TextField, Typography } from "@mui/material";
 
 import NiArrowLeft from "@/icons/nexture/ni-arrow-left";
 import NiSendRight from "@/icons/nexture/ni-send-right";
@@ -189,8 +178,8 @@ export default function PrivateChatPage() {
       </Card>
 
       <Typography variant="caption" className="text-text-secondary-light">
-        Deteksi off-platform aktif: pesan yang berisi kontak (WA/email/Telegram) akan diberi
-        tanda <strong>Flagged</strong> untuk review admin.
+        Deteksi off-platform aktif: pesan yang berisi kontak (WA/email/Telegram) akan diberi tanda{" "}
+        <strong>Flagged</strong> untuk review admin.
       </Typography>
     </Stack>
   );

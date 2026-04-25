@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { Formik, Form, type FormikProps } from "formik";
+import { Form, Formik, type FormikProps } from "formik";
 import { useSnackbar } from "notistack";
+import { useMemo, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -36,9 +36,9 @@ import {
   MAX_STAT,
   overallScore,
   statLabels,
-  useTeacherProfiles,
   type TeacherProfile,
   type TeacherStats,
+  useTeacherProfiles,
 } from "@/lib/teachers-store";
 
 const STAT_KEYS: (keyof TeacherStats)[] = [
@@ -127,29 +127,63 @@ export default function AdminTeachersPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter((t) => t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q));
+    return list.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q),
+    );
   }, [list, search]);
 
   return (
     <Grid container spacing={5}>
       <Grid container spacing={2.5} className="w-full" size={12}>
         <Grid size={{ xs: 12, md: "grow" }}>
-          <Typography variant="h1" component="h1" className="mb-0">Profil Guru</Typography>
-          <Typography variant="body2" className="text-text-secondary">Kelola profil guru EduDoc — tampil di landing page + private zoom.</Typography>
+          <Typography variant="h1" component="h1" className="mb-0">
+            Profil Guru
+          </Typography>
+          <Typography variant="body2" className="text-text-secondary">
+            Kelola profil guru EduDoc — tampil di landing page + private zoom.
+          </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }}>
-          <Button variant="contained" color="primary" startIcon={<NiPlus size="medium" />} onClick={() => setEditing({ ...EMPTY })}>Guru Baru</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<NiPlus size="medium" />}
+            onClick={() => setEditing({ ...EMPTY })}
+          >
+            Guru Baru
+          </Button>
         </Grid>
       </Grid>
 
       <Grid size={12}>
-        <TextField fullWidth placeholder="Cari nama / email / mata pelajaran..." value={search} onChange={(e) => setSearch(e.target.value)} slotProps={{ input: { startAdornment: <InputAdornment position="start"><NiSearch size="small" /></InputAdornment> } }} />
+        <TextField
+          fullWidth
+          placeholder="Cari nama / email / mata pelajaran..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <NiSearch size="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
       </Grid>
 
       <Grid size={12} container spacing={2.5}>
         {filtered.length === 0 ? (
           <Grid size={12}>
-            <Card><CardContent sx={{ textAlign: "center", py: 5 }}><Typography variant="body2" className="text-text-secondary">Belum ada guru.</Typography></CardContent></Card>
+            <Card>
+              <CardContent sx={{ textAlign: "center", py: 5 }}>
+                <Typography variant="body2" className="text-text-secondary">
+                  Belum ada guru.
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
         ) : (
           filtered.map((t) => {
@@ -159,18 +193,44 @@ export default function AdminTeachersPage() {
                 <Card sx={{ height: "100%" }}>
                   <CardContent className="flex flex-col gap-2">
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Avatar src={t.photo} sx={{ width: 56, height: 56 }}>{t.name.charAt(0)}</Avatar>
+                      <Avatar src={t.photo} sx={{ width: 56, height: 56 }}>
+                        {t.name.charAt(0)}
+                      </Avatar>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography variant="subtitle1">{t.name}</Typography>
-                        <Typography variant="caption" className="text-text-secondary-dark">{t.subject}</Typography>
+                        <Typography variant="caption" className="text-text-secondary-dark">
+                          {t.subject}
+                        </Typography>
                       </Box>
-                      <Chip size="small" label={t.status} color={t.status === "ACTIVE" ? "success" : "default"} variant="outlined" />
+                      <Chip
+                        size="small"
+                        label={t.status}
+                        color={t.status === "ACTIVE" ? "success" : "default"}
+                        variant="outlined"
+                      />
                     </Stack>
-                    <Typography variant="caption" className="text-text-secondary">{t.email}</Typography>
-                    <Typography variant="body2" sx={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.description}</Typography>
+                    <Typography variant="caption" className="text-text-secondary">
+                      {t.email}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {t.description}
+                    </Typography>
                     <Stack direction="row" spacing={2}>
-                      <Stack direction="row" spacing={0.5} alignItems="center" className="text-warning"><NiStar size="small" /><Typography variant="caption">{t.rating.toFixed(1)}</Typography></Stack>
-                      <Typography variant="caption" className="text-text-secondary">{t.students} siswa · {t.sessions} sesi</Typography>
+                      <Stack direction="row" spacing={0.5} alignItems="center" className="text-warning">
+                        <NiStar size="small" />
+                        <Typography variant="caption">{t.rating.toFixed(1)}</Typography>
+                      </Stack>
+                      <Typography variant="caption" className="text-text-secondary">
+                        {t.students} siswa · {t.sessions} sesi
+                      </Typography>
                     </Stack>
                     <Box sx={{ mt: 0.5, pt: 1, borderTop: "1px solid", borderColor: "divider" }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
@@ -183,9 +243,24 @@ export default function AdminTeachersPage() {
                       </Stack>
                       <StatRadar stats={ts} size={200} />
                     </Box>
-                    <Stack direction="row" spacing={0.5} sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
-                      <Button size="tiny" variant="surface" color="grey" startIcon={<NiPen size="small" />} onClick={() => setEditing({ ...t, stats: ts })} fullWidth>Edit</Button>
-                      <IconButton size="small" color="error" onClick={() => setDeleteFor(t)}><NiBinEmpty size="small" /></IconButton>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                    >
+                      <Button
+                        size="tiny"
+                        variant="surface"
+                        color="grey"
+                        startIcon={<NiPen size="small" />}
+                        onClick={() => setEditing({ ...t, stats: ts })}
+                        fullWidth
+                      >
+                        Edit
+                      </Button>
+                      <IconButton size="small" color="error" onClick={() => setDeleteFor(t)}>
+                        <NiBinEmpty size="small" />
+                      </IconButton>
                     </Stack>
                   </CardContent>
                 </Card>
@@ -240,10 +315,28 @@ export default function AdminTeachersPage() {
 
       <Dialog open={!!deleteFor} onClose={() => setDeleteFor(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Hapus Guru?</DialogTitle>
-        <DialogContent><Typography variant="body2"><strong>{deleteFor?.name}</strong> akan dihapus permanen.</Typography></DialogContent>
+        <DialogContent>
+          <Typography variant="body2">
+            <strong>{deleteFor?.name}</strong> akan dihapus permanen.
+          </Typography>
+        </DialogContent>
         <DialogActions>
-          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>Batal</Button>
-          <Button variant="contained" color="error" onClick={() => { if (deleteFor) { remove(deleteFor.id); enqueueSnackbar("Dihapus", { variant: "success" }); setDeleteFor(null); } }}>Ya, Hapus</Button>
+          <Button variant="paper" color="grey" onClick={() => setDeleteFor(null)}>
+            Batal
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (deleteFor) {
+                remove(deleteFor.id);
+                enqueueSnackbar("Dihapus", { variant: "success" });
+                setDeleteFor(null);
+              }
+            }}
+          >
+            Ya, Hapus
+          </Button>
         </DialogActions>
       </Dialog>
     </Grid>

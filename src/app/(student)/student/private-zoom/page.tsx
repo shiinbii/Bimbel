@@ -1,9 +1,9 @@
 "use client";
 
+import { Form, Formik } from "formik";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Formik, Form } from "formik";
 import { useSnackbar } from "notistack";
+import { useMemo } from "react";
 import * as Yup from "yup";
 
 import {
@@ -30,7 +30,7 @@ import { useCurrentUser } from "@/lib/current-user";
 import { mockUser } from "@/lib/mock-data";
 import { pushNotification } from "@/lib/notifications-store";
 import { useWallet } from "@/lib/points-store";
-import { usePrivateZoom, type PrivateZoomStatus } from "@/lib/private-zoom-store";
+import { type PrivateZoomStatus, usePrivateZoom } from "@/lib/private-zoom-store";
 import { useTeacherProfiles } from "@/lib/teachers-store";
 import { computeTier, useTierConfigs } from "@/lib/tier-config-store";
 
@@ -99,12 +99,7 @@ export default function StudentPrivateZoomPage() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: "auto" }} className="flex flex-row items-start gap-2">
-          <Chip
-            icon={<NiCrown size="small" />}
-            label="Fitur Premium"
-            color="warning"
-            variant="outlined"
-          />
+          <Chip icon={<NiCrown size="small" />} label="Fitur Premium" color="warning" variant="outlined" />
         </Grid>
       </Grid>
 
@@ -145,7 +140,7 @@ export default function StudentPrivateZoomPage() {
             setSubmitting(false);
           }}
         >
-          {({ values, handleChange, handleBlur, errors, touched, isSubmitting, setFieldValue }) => (
+          {({ values, handleChange, handleBlur, errors, touched, isSubmitting }) => (
             <Form>
               <Card>
                 <CardContent className="flex flex-col gap-2.5">
@@ -295,8 +290,14 @@ export default function StudentPrivateZoomPage() {
                             Catatan: {r.notes}
                           </Typography>
                         )}
-                        <Typography variant="caption" className="text-text-secondary-light" component="p" sx={{ mt: 0.5 }}>
-                          Dikirim {new Date(r.createdAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+                        <Typography
+                          variant="caption"
+                          className="text-text-secondary-light"
+                          component="p"
+                          sx={{ mt: 0.5 }}
+                        >
+                          Dikirim{" "}
+                          {new Date(r.createdAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
                         </Typography>
                       </Box>
                       <Button
@@ -311,13 +312,12 @@ export default function StudentPrivateZoomPage() {
                       </Button>
                     </Stack>
                     {r.status === "SCHEDULED" && (
-                      <Stack direction="row" spacing={1} sx={{ mt: 1.5, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
-                        <Button
-                          size="tiny"
-                          variant="contained"
-                          color="success"
-                          startIcon={<NiCheck size="small" />}
-                        >
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ mt: 1.5, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                      >
+                        <Button size="tiny" variant="contained" color="success" startIcon={<NiCheck size="small" />}>
                           Konfirmasi Jadwal
                         </Button>
                       </Stack>

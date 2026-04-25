@@ -7,13 +7,7 @@ import { landingPathFor } from "@/config/roles";
 import { getMyProfile } from "@/lib/auth-client";
 import type { Role } from "@/lib/types";
 
-export default function RoleGuard({
-  allowed,
-  children,
-}: {
-  allowed: readonly Role[];
-  children: React.ReactNode;
-}) {
+export default function RoleGuard({ allowed, children }: { allowed: readonly Role[]; children: React.ReactNode }) {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
   const allowedKey = allowed.join(",");

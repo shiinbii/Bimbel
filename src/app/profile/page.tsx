@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Avatar, Box, Button, Card, CardContent, Chip, Grid, Stack, Typography } from "@mui/material";
 
+import { ROLE_LABEL } from "@/config/roles";
 import NiAward from "@/icons/nexture/ni-badge";
 import NiCalendar from "@/icons/nexture/ni-calendar";
 import NiCheck from "@/icons/nexture/ni-check";
@@ -14,7 +15,6 @@ import NiPhone from "@/icons/nexture/ni-phone";
 import NiShieldCheck from "@/icons/nexture/ni-shield-check";
 import NiTrophy from "@/icons/nexture/ni-trophy";
 import NiUser from "@/icons/nexture/ni-user";
-import { ROLE_LABEL } from "@/config/roles";
 import { useCurrentUser } from "@/lib/current-user";
 import { mockUser } from "@/lib/mock-data";
 import { daysUntil, useWallet } from "@/lib/points-store";
@@ -86,9 +86,11 @@ export default function ProfilePage() {
                   <Typography variant="h3" component="h2">
                     {displayName}
                   </Typography>
-                  <Typography variant="body2" className="text-text-secondary-light">
-                    Bergabung {mockUser.joinedAt} · ID {mockUser.id}
-                  </Typography>
+                  {displayEmail && (
+                    <Typography variant="body2" className="text-text-secondary-light">
+                      {displayEmail}
+                    </Typography>
+                  )}
                 </Box>
               </Stack>
             </Stack>
@@ -178,26 +180,13 @@ export default function ProfilePage() {
             <CardContent>
               <Grid container spacing={2}>
                 {[
-                  { icon: <NiAward size="small" />, label: "Achievement", value: 12 },
-                  { icon: <NiTrophy size="small" />, label: "Streak Belajar", value: "12 hari" },
-                  { icon: <NiCalendar size="small" />, label: "Sesi Diikuti", value: 18 },
+                  { icon: <NiAward size="small" />, label: "Achievement", value: 0 },
+                  { icon: <NiTrophy size="small" />, label: "Streak Belajar", value: "0 hari" },
+                  { icon: <NiCalendar size="small" />, label: "Sesi Diikuti", value: 0 },
                 ].map((s) => (
                   <Grid size={{ xs: 12, sm: 4 }} key={s.label}>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 1.5,
-                          bgcolor: "primary.light",
-                          color: "primary.main",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {s.icon}
-                      </Box>
+                      <Box sx={{ color: "primary.main", display: "inline-flex" }}>{s.icon}</Box>
                       <Box>
                         <Typography variant="caption" className="text-text-secondary-light">
                           {s.label}
@@ -265,11 +254,7 @@ export default function ProfilePage() {
                             height: 8,
                             borderRadius: "50%",
                             bgcolor:
-                              h.kind === "SPEND"
-                                ? "error.main"
-                                : h.kind === "EXPIRE"
-                                  ? "warning.main"
-                                  : "success.main",
+                              h.kind === "SPEND" ? "error.main" : h.kind === "EXPIRE" ? "warning.main" : "success.main",
                             flexShrink: 0,
                           }}
                         />

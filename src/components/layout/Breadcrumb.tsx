@@ -58,12 +58,8 @@ export default function Breadcrumb() {
   if (segments.length === 0) return null;
 
   return (
-    <Breadcrumbs
-      aria-label="breadcrumb"
-      className="mb-4 text-sm"
-      separator="/"
-    >
-      <Link href="/" className="flex items-center gap-1 text-text-secondary hover:text-primary">
+    <Breadcrumbs aria-label="breadcrumb" className="mb-4 text-sm" separator="/">
+      <Link href="/" className="text-text-secondary hover:text-primary flex items-center gap-1">
         <NiHome size={14} />
         <span>Beranda</span>
       </Link>
@@ -79,11 +75,7 @@ export default function Breadcrumb() {
           );
         }
         return (
-          <Link
-            key={href}
-            href={href}
-            className="text-text-secondary hover:text-primary"
-          >
+          <Link key={href} href={href} className="text-text-secondary hover:text-primary">
             {label}
           </Link>
         );

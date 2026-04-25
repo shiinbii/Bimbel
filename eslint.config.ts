@@ -61,6 +61,7 @@ export default [
     rules: {
       "prefer-const": "warn",
       "no-var": "error",
+      "no-empty": ["error", { "allowEmptyCatch": true }],
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",

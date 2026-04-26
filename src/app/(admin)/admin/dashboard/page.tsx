@@ -3,17 +3,16 @@
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import { LineChart } from "@mui/x-charts";
 
+import { ROLE_LABEL } from "@/config/roles";
 import NiCamera from "@/icons/nexture/ni-camera";
 import NiCoin from "@/icons/nexture/ni-coin";
 import NiHeadset from "@/icons/nexture/ni-headset";
 import NiUsers from "@/icons/nexture/ni-users";
 import NiWallet from "@/icons/nexture/ni-wallet";
-import { ROLE_LABEL } from "@/config/roles";
+import { useAdminStats } from "@/lib/admin-stats";
 import { useCurrentUser } from "@/lib/current-user";
 import { formatIDR } from "@/lib/format";
-import { mockStudents, mockTeachers } from "@/lib/mock-data";
 import { useRole } from "@/lib/role-context";
-import { useZoomSessions } from "@/lib/zoom-sessions-store";
 
 const REVENUE_MONTHS = ["Okt", "Nov", "Des", "Jan", "Feb", "Mar", "Apr"];
 const REVENUE_DATA = [94, 112, 128, 142, 156, 178, 210];
@@ -21,36 +20,54 @@ const REVENUE_DATA = [94, 112, 128, 142, 156, 178, 210];
 export default function AdminDashboardPage() {
   const { user } = useCurrentUser();
   const { role } = useRole();
-  const { list: zoomList } = useZoomSessions();
+  const s = useAdminStats();
   const firstName = (user.name || "Admin").split(" ")[0];
-  const liveCount = zoomList.filter((z) => z.status === "LIVE").length;
-  const totalUsers = mockStudents.length + mockTeachers.length + 1420;
-  const totalMonth = 1250;
+
+  const userTrend =
+    s.newUsersThisMonth > 0 ? `+${s.newUsersThisMonth} bulan ini` : s.loaded ? "Belum ada user baru" : "—";
+  const txTrend =
+    s.transactionsToday > 0
+      ? `${s.transactionsTodaySuccess} sukses · ${s.transactionsTodayPending} pending`
+      : s.loaded
+        ? "Belum ada transaksi"
+        : "—";
+  const revenueTrend =
+    s.revenueGrowthPct !== 0
+      ? `${s.revenueGrowthPct > 0 ? "+" : ""}${s.revenueGrowthPct}% MoM`
+      : s.loaded
+        ? "Bandingan bulan lalu —"
+        : "—";
+  const sessionTrend =
+    s.liveSessions > 0
+      ? `${s.liveSessions} live sekarang`
+      : s.scheduledSessions > 0
+        ? `${s.scheduledSessions} terjadwal`
+        : "Tidak ada sesi aktif";
 
   const stats = [
     {
       icon: <NiUsers size="medium" />,
       label: "Total User",
-      value: totalUsers.toLocaleString("id-ID"),
-      trend: "+248 bulan ini",
+      value: s.totalUsers.toLocaleString("id-ID"),
+      trend: userTrend,
     },
     {
       icon: <NiCoin size="medium" />,
       label: "Transaksi Hari Ini",
-      value: "42",
-      trend: "24 sukses · 6 pending",
+      value: String(s.transactionsToday),
+      trend: txTrend,
     },
     {
       icon: <NiWallet size="medium" />,
       label: "Revenue Bulan",
-      value: formatIDR(totalMonth * 100_000),
-      trend: "+18% MoM",
+      value: formatIDR(s.revenueThisMonth),
+      trend: revenueTrend,
     },
     {
       icon: <NiCamera size="medium" />,
       label: "Sesi Aktif",
-      value: String(liveCount + 12),
-      trend: `${liveCount} live sekarang`,
+      value: String(s.liveSessions + s.scheduledSessions),
+      trend: sessionTrend,
     },
   ];
 
@@ -72,23 +89,23 @@ export default function AdminDashboardPage() {
           Metrik Utama
         </Typography>
         <Grid size={12} container spacing={2.5}>
-          {stats.map((s) => (
-            <Grid size={{ lg: 3, md: 6, xs: 12 }} key={s.label}>
+          {stats.map((stat) => (
+            <Grid size={{ lg: 3, md: 6, xs: 12 }} key={stat.label}>
               <Card>
                 <CardContent className="flex flex-col gap-5">
                   <Box className="flex flex-col">
                     <Box className="flex flex-row items-center justify-between">
                       <Typography variant="body2" className="text-text-secondary-dark text-nowrap">
-                        {s.label}
+                        {stat.label}
                       </Typography>
-                      <Box className="text-primary">{s.icon}</Box>
+                      <Box className="text-primary">{stat.icon}</Box>
                     </Box>
-                    <Box className="flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0 mt-1">
+                    <Box className="mt-1 flex flex-row items-center justify-start gap-2 lg:justify-between lg:gap-0">
                       <Typography variant="h5" className="text-text-primary">
-                        {s.value}
+                        {stat.value}
                       </Typography>
                       <Typography variant="body2" className="text-text-secondary-light">
-                        {s.trend}
+                        {stat.trend}
                       </Typography>
                     </Box>
                   </Box>
@@ -128,7 +145,7 @@ export default function AdminDashboardPage() {
           </Typography>
           <Card sx={{ height: "100%" }}>
             <CardContent className="flex flex-col gap-2">
-              <Box className="flex items-center gap-2 text-warning">
+              <Box className="text-warning flex items-center gap-2">
                 <NiHeadset size="medium" />
                 <Typography variant="overline">Perlu Respon</Typography>
               </Box>

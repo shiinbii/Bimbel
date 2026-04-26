@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { mockAuditLogs } from "./mock-data";
 import { getSupabase } from "./supabase";
 import type { AuditLog, Role } from "./types";
+import { useEffect, useState } from "react";
 
 type DbRow = {
   id: string;
@@ -46,26 +46,24 @@ export function useAuditLogs() {
         .order("created_at", { ascending: false })
         .limit(500);
       if (cancelled) return;
-      if (error || !data) {
+      // Hanya fallback ke mock kalau tabel benar-benar tidak ada / query error.
+      // Kalau tabel ada tapi kosong, tampilkan empty state — bukan data palsu.
+      if (error) {
         setList(mockAuditLogs);
         setSource("mock");
         setLoaded(true);
         return;
       }
-      const rows = (data as DbRow[]).map(toLog);
-      setList(rows.length > 0 ? rows : mockAuditLogs);
-      setSource(rows.length > 0 ? "db" : "mock");
+      const rows = ((data ?? []) as DbRow[]).map(toLog);
+      setList(rows);
+      setSource("db");
       setLoaded(true);
     };
     refresh();
 
     const ch = supa
       .channel(`aud_${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "audit_logs" },
-        () => refresh()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "audit_logs" }, () => refresh())
       .subscribe();
 
     return () => {
@@ -77,13 +75,7 @@ export function useAuditLogs() {
   return { list, loaded, source };
 }
 
-export async function logAudit(entry: {
-  action: string;
-  actor: string;
-  role: Role;
-  target: string;
-  ip?: string;
-}) {
+export async function logAudit(entry: { action: string; actor: string; role: Role; target: string; ip?: string }) {
   const supa = getSupabase();
   if (!supa) return;
   await supa.from("audit_logs").insert({

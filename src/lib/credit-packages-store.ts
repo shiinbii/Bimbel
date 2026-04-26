@@ -176,7 +176,12 @@ export function useCreditPackages() {
         .eq("active", true)
         .order("order", { ascending: true });
       if (cancelled) return;
-      setList(data && data.length ? (data as DbRow[]).map(toPkg) : DEFAULT_CREDIT_PACKAGES);
+      // Kalau DB punya rows tapi semuanya belum punya field baru (name == null),
+      // schema belum di-migrasi → fallback ke DEFAULT (5 paket baru) supaya UI
+      // tetap menampilkan katalog yang relevan, bukan "Paket"/"Token" generik.
+      const rows = (data ?? []) as DbRow[];
+      const hasNewSchema = rows.some((r) => r.name != null && r.name !== "");
+      setList(rows.length && hasNewSchema ? rows.map(toPkg) : DEFAULT_CREDIT_PACKAGES);
       setLoaded(true);
     };
     refresh();

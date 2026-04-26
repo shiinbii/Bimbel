@@ -1,13 +1,13 @@
 "use client";
 
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 import Link from "next/link";
 import { useState } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 import {
   Avatar,
@@ -50,6 +50,15 @@ import { formatIDR } from "@/lib/format";
 import { useLandingContent } from "@/lib/landing-content";
 import { useRole } from "@/lib/role-context";
 import { useTestimonials } from "@/lib/testimonials-store";
+import type { PackageCategory } from "@/lib/types";
+
+const CATEGORY_LABEL: Record<PackageCategory, string> = {
+  TRY_OUT: "Try Out",
+  CBT: "CBT",
+  MATERI: "Materi",
+  LIVE_CLASS: "Live Class",
+  TOKEN: "Token",
+};
 
 const FEATURES = [
   {
@@ -136,13 +145,7 @@ export default function LandingPage() {
                   <Button component={Link} href="/login" variant="text" color="grey" size="medium">
                     Masuk
                   </Button>
-                  <Button
-                    component={Link}
-                    href="/register"
-                    variant="contained"
-                    color="primary"
-                    size="medium"
-                  >
+                  <Button component={Link} href="/register" variant="contained" color="primary" size="medium">
                     Daftar Gratis
                   </Button>
                 </>
@@ -400,71 +403,109 @@ export default function LandingPage() {
           >
             {sortedPackages.map((pkg) => {
               const discount = packageDiscount(pkg.price, pkg.points, pricing.pricePerCoin);
+              const hasOriginal = pkg.originalPrice && pkg.originalPrice > pkg.price;
+              const promoPct = hasOriginal
+                ? Math.round(((pkg.originalPrice! - pkg.price) / pkg.originalPrice!) * 100)
+                : 0;
+              const features =
+                pkg.features && pkg.features.length > 0
+                  ? pkg.features
+                  : [
+                      `${pkg.points} poin untuk quiz, sesi, & bundle premium`,
+                      "Tier otomatis naik seiring saldo",
+                      "Helpdesk realtime",
+                    ];
               return (
-              <SwiperSlide key={pkg.id}>
-                <Card
-                  variant={pkg.popular ? "elevation" : "outlined"}
-                  sx={{
-                    height: "100%",
-                    borderColor: pkg.popular ? "primary.main" : "divider",
-                    borderWidth: pkg.popular ? 2 : 1,
-                  }}
-                >
-                  <CardContent className="flex flex-col gap-3">
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="h6">Paket {pkg.points} pts</Typography>
-                      {pkg.popular && <Chip label="Populer" color="primary" size="small" />}
-                    </Stack>
-                    <Box>
-                      <Typography variant="h4">{formatIDR(pkg.price)}</Typography>
-                      <Stack direction="row" spacing={0.75} sx={{ mt: 0.5 }} flexWrap="wrap" rowGap={0.5}>
-                        {discount > 0 && (
-                          <Chip size="small" color="success" label={`Hemat ${discount}%`} />
+                <SwiperSlide key={pkg.id}>
+                  <Card
+                    variant={pkg.popular ? "elevation" : "outlined"}
+                    sx={{
+                      height: "100%",
+                      borderColor: pkg.popular ? "primary.main" : "divider",
+                      borderWidth: pkg.popular ? 2 : 1,
+                    }}
+                  >
+                    <CardContent className="flex flex-col gap-3">
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        flexWrap="wrap"
+                        rowGap={0.5}
+                      >
+                        <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" rowGap={0.5}>
+                          {pkg.category && (
+                            <Chip
+                              size="small"
+                              label={CATEGORY_LABEL[pkg.category]}
+                              variant="outlined"
+                              color="primary"
+                            />
+                          )}
+                          {pkg.popular && <Chip label="Populer" color="primary" size="small" />}
+                        </Stack>
+                        {hasOriginal && <Chip size="small" color="error" label={`-${promoPct}%`} />}
+                      </Stack>
+                      <Box>
+                        <Typography variant="h6">{pkg.name || `Paket ${pkg.points} pts`}</Typography>
+                        {pkg.description && (
+                          <Typography variant="body2" className="text-text-secondary" sx={{ mt: 0.5 }}>
+                            {pkg.description}
+                          </Typography>
                         )}
-                        {pkg.bonus ? (
-                          <Chip
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                            label={`+${pkg.bonus} bonus`}
-                          />
-                        ) : null}
+                      </Box>
+                      <Box>
+                        <Stack direction="row" spacing={1} alignItems="baseline" flexWrap="wrap" rowGap={0.5}>
+                          <Typography variant="h4">{formatIDR(pkg.price)}</Typography>
+                          {hasOriginal && (
+                            <Typography
+                              variant="body2"
+                              className="text-text-secondary"
+                              sx={{ textDecoration: "line-through" }}
+                            >
+                              {formatIDR(pkg.originalPrice!)}
+                            </Typography>
+                          )}
+                        </Stack>
+                        <Stack direction="row" spacing={0.75} sx={{ mt: 0.5 }} flexWrap="wrap" rowGap={0.5}>
+                          <Chip size="small" color="warning" variant="outlined" label={`${pkg.points} poin`} />
+                          {pkg.bonus ? (
+                            <Chip size="small" color="warning" variant="outlined" label={`+${pkg.bonus} bonus`} />
+                          ) : null}
+                          {pkg.durationDays ? (
+                            <Chip size="small" color="info" variant="outlined" label={`${pkg.durationDays} hari`} />
+                          ) : null}
+                          {discount > 0 && !hasOriginal && (
+                            <Chip size="small" color="success" label={`Hemat ${discount}%`} />
+                          )}
+                        </Stack>
+                      </Box>
+                      <Divider />
+                      <Stack spacing={1}>
+                        {features.map((f, idx) => (
+                          <Stack key={idx} direction="row" spacing={1} alignItems="flex-start">
+                            <Box sx={{ flexShrink: 0, mt: 0.25 }}>
+                              <NiDocumentCheck size="small" />
+                            </Box>
+                            <Typography variant="body2" className="text-text-secondary">
+                              {f}
+                            </Typography>
+                          </Stack>
+                        ))}
                       </Stack>
-                    </Box>
-                    <Divider />
-                    <Stack spacing={1}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <NiCoin size="small" />
-                        <Typography variant="body2" className="text-text-secondary">
-                          {pkg.points} poin untuk quiz, sesi, & bundle premium
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <NiShieldCheck size="small" />
-                        <Typography variant="body2" className="text-text-secondary">
-                          Tier otomatis naik seiring saldo
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <NiHeadset size="small" />
-                        <Typography variant="body2" className="text-text-secondary">
-                          Helpdesk realtime
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    <Button
-                      component={Link}
-                      href="/register"
-                      variant={pkg.popular ? "contained" : "pastel"}
-                      color="primary"
-                      fullWidth
-                      sx={{ mt: 1 }}
-                    >
-                      Beli {pkg.points} pts
-                    </Button>
-                  </CardContent>
-                </Card>
-              </SwiperSlide>
+                      <Button
+                        component={Link}
+                        href="/register"
+                        variant={pkg.popular ? "contained" : "pastel"}
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: "auto" }}
+                      >
+                        Beli {pkg.name || `${pkg.points} pts`}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </SwiperSlide>
               );
             })}
           </Swiper>
@@ -555,13 +596,7 @@ export default function LandingPage() {
                   {lc.ctaSecondaryButton}
                 </Button>
               ) : (
-                <Button
-                  component={Link}
-                  href="/login"
-                  variant="outlined"
-                  color="inherit"
-                  size="large"
-                >
+                <Button component={Link} href="/login" variant="outlined" color="inherit" size="large">
                   Saya sudah punya akun
                 </Button>
               )}
@@ -571,7 +606,10 @@ export default function LandingPage() {
       </Box>
 
       {/* Footer */}
-      <Box component="footer" sx={{ bgcolor: "background.paper", py: 4, borderTop: "1px solid", borderColor: "divider" }}>
+      <Box
+        component="footer"
+        sx={{ bgcolor: "background.paper", py: 4, borderTop: "1px solid", borderColor: "divider" }}
+      >
         <Container maxWidth="xl">
           <Stack
             direction={{ xs: "column", sm: "row" }}

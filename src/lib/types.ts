@@ -19,14 +19,23 @@ export interface User {
   joinedAt?: string;
 }
 
+export type PackageCategory = "TRY_OUT" | "CBT" | "MATERI" | "LIVE_CLASS" | "TOKEN";
+
 export interface PointPackage {
   id: string;
   name: string;
   price: number;
+  /** Harga sebelum diskon (untuk strikethrough). Opsional. */
+  originalPrice?: number;
   points: number;
   bonus?: number;
   popular?: boolean;
   description: string;
+  category?: PackageCategory;
+  /** Bullet list fitur yang didapat. */
+  features?: string[];
+  /** Durasi akses dalam hari. 0 / undefined = tanpa batas. */
+  durationDays?: number;
 }
 
 export type OptionKey = "A" | "B" | "C" | "D";

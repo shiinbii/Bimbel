@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useSnackbar } from "notistack";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
+  MenuItem,
   Stack,
   Switch,
   TextField,
@@ -27,22 +27,41 @@ import {
 import NiBinEmpty from "@/icons/nexture/ni-bin-empty";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiPlus from "@/icons/nexture/ni-plus";
-import { useCreditPackages, type CreditPackage } from "@/lib/credit-packages-store";
+import { type CreditPackage, useCreditPackages } from "@/lib/credit-packages-store";
 import { formatIDR } from "@/lib/format";
+import type { PackageCategory } from "@/lib/types";
+
+const CATEGORY_LABEL: Record<PackageCategory, string> = {
+  TRY_OUT: "Try Out",
+  CBT: "CBT",
+  MATERI: "Materi (Mindmap/Video)",
+  LIVE_CLASS: "Live Class / Private",
+  TOKEN: "Token / Poin",
+};
+const CATEGORY_OPTIONS = Object.keys(CATEGORY_LABEL) as PackageCategory[];
 
 const PackageSchema = Yup.object().shape({
+  name: Yup.string().trim().required("Nama paket wajib"),
+  description: Yup.string(),
+  category: Yup.string().oneOf(CATEGORY_OPTIONS).required(),
   price: Yup.number().min(0).required(),
+  originalPrice: Yup.number().min(0).nullable(),
   points: Yup.number().min(1).required(),
   bonus: Yup.number().min(0),
+  durationDays: Yup.number().min(0).nullable(),
 });
 
 type Draft = Omit<CreditPackage, "id" | "order"> & { id?: string };
 
 const EMPTY: Draft = {
+  name: "",
+  description: "",
+  category: "TOKEN",
   price: 0,
   points: 0,
   bonus: 0,
   popular: false,
+  features: [],
 };
 
 export default function AdminPackagesPage() {
@@ -88,7 +107,14 @@ export default function AdminPackagesPage() {
         ) : (
           list.map((pkg) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pkg.id}>
-              <Card sx={{ height: "100%", borderColor: pkg.popular ? "primary.main" : "divider", borderWidth: pkg.popular ? 2 : 1 }} variant={pkg.popular ? "elevation" : "outlined"}>
+              <Card
+                sx={{
+                  height: "100%",
+                  borderColor: pkg.popular ? "primary.main" : "divider",
+                  borderWidth: pkg.popular ? 2 : 1,
+                }}
+                variant={pkg.popular ? "elevation" : "outlined"}
+              >
                 <CardContent className="flex flex-col gap-2">
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography variant="h6">Paket {pkg.points} pts</Typography>
@@ -103,7 +129,11 @@ export default function AdminPackagesPage() {
                       <Chip size="small" label={`+${pkg.bonus} bonus`} color="warning" variant="outlined" />
                     ) : null}
                   </Stack>
-                  <Stack direction="row" spacing={1} sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}
+                  >
                     <Button
                       variant="surface"
                       color="grey"
@@ -136,16 +166,20 @@ export default function AdminPackagesPage() {
               enableReinitialize
               onSubmit={(values, { setSubmitting }) => {
                 const existing = editing.id ? list.find((p) => p.id === editing.id) : undefined;
-                const nextOrder =
-                  existing?.order ??
-                  (list.length ? Math.max(...list.map((p) => p.order)) + 1 : 1);
+                const nextOrder = existing?.order ?? (list.length ? Math.max(...list.map((p) => p.order)) + 1 : 1);
                 const pkg: CreditPackage = {
                   id: editing.id ?? `pkg_${Date.now()}`,
+                  name: values.name.trim(),
+                  description: (values.description ?? "").trim(),
+                  category: values.category,
                   price: Number(values.price),
+                  originalPrice: values.originalPrice ? Number(values.originalPrice) : undefined,
                   points: Number(values.points),
                   bonus: Number(values.bonus) || undefined,
                   popular: values.popular,
                   order: nextOrder,
+                  features: values.features ?? [],
+                  durationDays: values.durationDays ? Number(values.durationDays) : undefined,
                 };
                 upsert(pkg);
                 enqueueSnackbar(`Paket ${pkg.points} pts tersimpan`, { variant: "success" });
@@ -153,9 +187,46 @@ export default function AdminPackagesPage() {
                 setEditing(null);
               }}
             >
-              {({ values, handleChange, handleBlur, errors, touched, submitForm, isSubmitting }) => (
+              {({ values, handleChange, handleBlur, errors, touched, submitForm, isSubmitting, setFieldValue }) => (
                 <Form>
                   <Stack spacing={2} sx={{ pt: 1 }}>
+                    <TextField
+                      fullWidth
+                      label="Nama paket"
+                      name="name"
+                      placeholder="cth. Paket Try Out Jawara"
+                      value={values.name}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.name && Boolean(errors.name)}
+                      helperText={touched.name && errors.name}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Deskripsi singkat"
+                      name="description"
+                      multiline
+                      rows={2}
+                      placeholder="1-2 kalimat menjelaskan apa yang didapat siswa"
+                      value={values.description ?? ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <TextField
+                      fullWidth
+                      select
+                      label="Kategori"
+                      name="category"
+                      value={values.category}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    >
+                      {CATEGORY_OPTIONS.map((c) => (
+                        <MenuItem key={c} value={c}>
+                          {CATEGORY_LABEL[c]}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                     <Grid container spacing={2}>
                       <Grid size={6}>
                         <TextField
@@ -174,6 +245,18 @@ export default function AdminPackagesPage() {
                         <TextField
                           fullWidth
                           type="number"
+                          label="Harga coret (opsional)"
+                          name="originalPrice"
+                          placeholder="Untuk promo strikethrough"
+                          value={values.originalPrice ?? ""}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                        />
+                      </Grid>
+                      <Grid size={6}>
+                        <TextField
+                          fullWidth
+                          type="number"
                           label="Poin"
                           name="points"
                           value={values.points}
@@ -183,7 +266,7 @@ export default function AdminPackagesPage() {
                           helperText={touched.points && errors.points}
                         />
                       </Grid>
-                      <Grid size={12}>
+                      <Grid size={6}>
                         <TextField
                           fullWidth
                           type="number"
@@ -194,7 +277,34 @@ export default function AdminPackagesPage() {
                           onBlur={handleBlur}
                         />
                       </Grid>
+                      <Grid size={12}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Durasi akses (hari, opsional)"
+                          name="durationDays"
+                          placeholder="Kosongkan = tanpa batas"
+                          value={values.durationDays ?? ""}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                        />
+                      </Grid>
                     </Grid>
+                    <TextField
+                      fullWidth
+                      label="Fitur paket (1 baris = 1 fitur)"
+                      multiline
+                      rows={4}
+                      placeholder={"10x Try Out lengkap\nPembahasan video tiap soal\nRanking nasional realtime"}
+                      value={(values.features ?? []).join("\n")}
+                      onChange={(e) => {
+                        const feats = e.target.value
+                          .split("\n")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        setFieldValue("features", feats);
+                      }}
+                    />
                     <FormControlLabel
                       control={
                         <Switch
@@ -209,12 +319,7 @@ export default function AdminPackagesPage() {
                     <Button variant="paper" color="grey" onClick={() => setEditing(null)}>
                       Batal
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
+                    <Button variant="contained" color="primary" onClick={submitForm} disabled={isSubmitting}>
                       {isSubmitting ? "Menyimpan..." : "Simpan"}
                     </Button>
                   </DialogActions>
